@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Hub - PDF Study and Testing Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+            min-height: 100vh;
+            padding: 24px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .header-subtitle {
+            color: #94a3b8;
+        }
+
+        /* UPLOAD SECTION */
+        .upload-section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 32px;
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .upload-label:hover {
+            background-color: rgba(71, 85, 105, 0.3);
+            border-color: #64748b;
+        }
+
+        .upload-label input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            color: #3b82f6;
+        }
+
+        .upload-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .upload-subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .upload-progress {
+            font-size: 14px;
+            color: #60a5fa;
+            margin-top: 8px;
+        }
+
+        /* DOCUMENTS GRID */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 48px 24px;
+            color: #94a3b8;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+        }
+
+        /* DOCUMENT CARD */
+        .doc-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .doc-card:hover {
+            border-color: #475569;
+        }
+
+        .doc-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .doc-date {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+        }
+
+        .doc-stats {
+            space: 8px;
+            margin-bottom: 24px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-weight: 600;
+        }
+
+        .stat-correct {
+            color: #4ade80;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #22c55e;
+            transition: width 0.3s;
+        }
+
+        /* BUTTONS */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: #475569;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #64748b;
+        }
+
+        .btn-danger {
+            background: #475569;
+            color: #f87171;
+        }
+
+        .btn-danger:hover {
+            background: #64748b;
+        }
+
+        /* QUIZ VIEW */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .progress-section {
+            margin-bottom: 32px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .exit-btn {
+            background: none;
+            color: #94a3b8;
+            padding: 0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .exit-btn:hover {
+            color: white;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-track-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s;
+        }
+
+        /* QUESTION CARD */
+        .question-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 32px;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .difficulty-easy {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .difficulty-medium {
+            background: rgba(234, 179, 8, 0.2);
+            color: #fcd34d;
+        }
+
+        .difficulty-hard {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .question-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        /* OPTIONS */
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .option-btn {
+            padding: 16px;
+            border-radius: 8px;
+            text-align: left;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 2px solid #475569;
+            background: rgba(71, 85, 105, 0.3);
+            color: #e2e8f0;
+            cursor: pointer;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: #64748b;
+            background: rgba(71, 85, 105, 0.5);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.selected-correct {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .option-btn.selected-incorrect {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .option-btn.correct-answer {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .option-label {
+            display: flex;
+            gap: 12px;
+        }
+
+        .option-key {
+            font-weight: bold;
+            min-width: 20px;
+        }
+
+        .option-text {
+            flex: 1;
+        }
+
+        /* FEEDBACK */
+        .feedback {
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .feedback-correct {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .feedback-incorrect {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .feedback-correct .feedback-icon {
+            background: #22c55e;
+            color: white;
+        }
+
+        .feedback-incorrect .feedback-icon {
+            background: #ef4444;
+            color: white;
+        }
+
+        .feedback-content {
+            flex: 1;
+        }
+
+        .feedback-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feedback-correct .feedback-title {
+            color: #86efac;
+        }
+
+        .feedback-incorrect .feedback-title {
+            color: #fca5a5;
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .source-box {
+            background: rgba(71, 85, 105, 0.5);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .source-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .source-text {
+            font-size: 13px;
+            color: #cbd5e1;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* NEXT BUTTON */
+        .next-btn {
+            width: 100%;
+            padding: 16px;
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .next-btn:hover {
+            background: #2563eb;
+        }
+
+        /* HIDDEN */
+        .hidden {
+            display: none !important;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .question-text {
+                font-size: 20px;
+            }
+
+            .option-btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LIBRARY VIEW -->
+        <div id="libraryView">
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-icon">📚</div>
+                    <h1>Study Hub</h1>
+                </div>
+                <div class="header-subtitle">Upload documents and generate comprehensive study questions</div>
+            </div>
+
+            <div class="upload-section">
+                <label class="upload-label">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-title">Upload PDF Document</div>
+                    <div class="upload-subtitle">Max 50MB • Supports PDFs only</div>
+                    <div class="upload-progress" id="uploadProgress"></div>
+                    <input type="file" id="fileInput" accept=".pdf">
+                </label>
+            </div>
+
+            <div class="documents-grid" id="documentsGrid">
+                <div class="empty-state">
+                    <div class="empty-state-text">No documents yet. Upload a PDF to get started.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUIZ VIEW -->
+        <div id="quizView" class="hidden">
+            <div class="quiz-container">
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span id="questionCounter">Question 1 of 1</span>
+                        <button class="exit-btn" onclick="endQuiz()">Exit Quiz</button>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-track-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div id="difficultyBadge" class="difficulty-badge"></div>
+                    <div id="questionText" class="question-text"></div>
+                    
+                    <div class="options-group" id="optionsGroup"></div>
+
+                    <div id="feedbackSection" class="hidden">
+                        <div id="feedbackBox" class="feedback"></div>
+                        <button class="next-btn" onclick="goToNextQuestion()">
+                            <span id="nextBtnText">Next Question</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PDF.js setup
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // State
+        let documents = [];
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let scores = {};
+        let showAnswer = false;
+        let selectedAnswer = null;
+        let quizStarted = false;
+
+        // Load from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('studyDocuments');
+            const savedScores = localStorage.getItem('studyScores');
+            if (saved) documents = JSON.parse(saved);
+            if (savedScores) scores = JSON.parse(savedScores);
+            renderLibrary();
+        }
+
+        // Save to localStorage
+        function saveData() {
+            localStorage.setItem('studyDocuments', JSON.stringify(documents));
+            localStorage.setItem('studyScores', JSON.stringify(scores));
+        }
+
+        // Extract PDF text
+        async function extractPdfText(file) {
+            return new Promise(async (resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const pdf = await pdfjsLib.getDocument(e.target.result).promise;
+                        let text = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            updateProgress(`Extracting text... page ${i}/${pdf.numPages}`);
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            text += content.items.map(item => item.str).join(' ') + '\n\n';
+                        }
+                        resolve(text);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function updateProgress(message) {
+            document.getElementById('uploadProgress').textContent = message;
+        }
+
+        // Handle file upload
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf') {
+                alert('Please upload a PDF file');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                alert('File size must be under 50MB');
+                return;
+            }
+
+            try {
+                updateProgress('Processing PDF...');
+                const text = await extractPdfText(file);
+                const newDoc = {
+                    id: Date.now(),
+                    name: file.name,
+                    text: text,
+                    uploadDate: new Date().toLocaleDateString(),
+                    questionCount: 0
+                };
+                documents.push(newDoc);
+                saveData();
+                renderLibrary();
+                updateProgress('');
+                document.getElementById('fileInput').value = '';
+            } catch (error) {
+                alert('Error reading PDF: ' + error.message);
+                updateProgress('');
+            }
+        });
+
+        // Generate questions
+        async function generateQuestions(docId) {
+            const doc = documents.find(d => d.id === docId);
+            if (!doc) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                const maxChars = 50000;
+                const truncatedText = doc.text.substring(0, maxChars);
+
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-6',
+                        max_tokens: 4000,
+                        messages: [{
+                            role: 'user',
+                            content: `You are creating study questions from the following document. Generate 15-20 multiple choice questions.
+
+For EACH question, respond with ONLY valid JSON in this exact format (no markdown, no extra text):
+[
+  {
+    "question": "The actual question text",
+    "difficulty": "easy",
+    "correctAnswer": "A",
+    "options": {
+      "A": "First option",
+      "B": "Second option",
+      "C": "Third option",
+      "D": "Fourth option"
+    },
+    "sourceLocation": "The exact quote or phrase from the document that answers this question",
+    "explanation": "Brief explanation of why this is correct"
+  }
+]
+
+Requirements:
+- difficulty must be: "easy", "medium", or "hard"
+- correctAnswer must be: "A", "B", "C", or "D"
+- sourceLocation must be EXACT text from the document
+- Vary difficulty levels: aim for mix of easy, medium, hard
+- All 4 options should be plausible
+- Questions should test understanding, not just memorization
+
+Document to create questions from:
+${truncatedText}`
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'Failed to generate questions');
+                }
+
+                const data = await response.json();
+                const content = data.content[0].text;
+                const jsonMatch = content.match(/\[[\s\S]*\]/);
+                if (!jsonMatch) throw new Error('Invalid response format');
+
+                const parsedQuestions = JSON.parse(jsonMatch[0]);
+                const questionsWithDoc = parsedQuestions.map((q, idx) => ({
+                    ...q,
+                    id: `${docId}-${idx}`,
+                    docId: docId
+                }));
+
+                const otherDocQuestions = questions.filter(q => q.docId !== docId);
+                questions = [...otherDocQuestions, ...questionsWithDoc];
+
+                documents = documents.map(d => 
+                    d.id === docId ? { ...d, questionCount: questionsWithDoc.length } : d
+                );
+
+                const newScores = { ...scores };
+                questionsWithDoc.forEach(q => {
+                    newScores[q.id] = null;
+                });
+                scores = newScores;
+
+                saveData();
+                renderLibrary();
+            } catch (error) {
+                alert('Error generating questions: ' + error.message);
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Questions';
+            }
+        }
+
+        function getDocumentStats(docId) {
+            const docQuestions = questions.filter(q => q.docId === docId);
+            const answered = docQuestions.filter(q => scores[q.id] !== null && scores[q.id] !== undefined);
+            const correct = docQuestions.filter(q => scores[q.id] === 'correct');
+            return {
+                total: docQuestions.length,
+                answered: answered.length,
+                correct: correct.length,
+                percentage: answered.length > 0 ? Math.round((correct.length / answered.length) * 100) : 0
+            };
+        }
+
+        function deleteDocument(docId) {
+            if (confirm('Delete this document? All generated questions will be lost.')) {
+                documents = documents.filter(d => d.id !== docId);
+                questions = questions.filter(q => q.docId !== docId);
+                const newScores = { ...scores };
+                Object.keys(newScores).forEach(key => {
+                    if (key.startsWith(`${docId}-`)) delete newScores[key];
+                });
+                scores = newScores;
+                saveData();
+                renderLibrary();
+            }
+        }
+
+        function resetProgress(docId) {
+            const questionsToReset = questions.filter(q => q.docId === docId);
+            questionsToReset.forEach(q => {
+                scores[q.id] = null;
+            });
+            saveData();
+            renderLibrary();
+        }
+
+        function startQuiz(docId) {
+            const docQuestions = questions.filter(q => q.docId === docId);
+            if (docQuestions.length === 0) {
+                alert('No questions yet. Generate questions first.');
+                return;
+            }
+            
+            questions = [...docQuestions].sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            showAnswer = false;
+            selectedAnswer = null;
+            quizStarted = true;
+            renderQuiz();
+        }
+
+        function renderLibrary() {
+            const view = document.getElementById('libraryView');
+            view.classList.remove('hidden');
+            document.getElementById('quizView').classList.add('hidden');
+
+            const grid = document.getElementById('documentsGrid');
+            if (documents.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="empty-state-text">No documents yet. Upload a PDF to get started.</div></div>';
+                return;
+            }
+
+            grid.innerHTML = documents.map(doc => {
+                const stats = getDocumentStats(doc.id);
+                const docQuestions = questions.filter(q => q.docId === doc.id);
+                
+                return `
+                    <div class="doc-card">
+                        <div class="doc-title">${doc.name}</div>
+                        <div class="doc-date">Uploaded ${doc.uploadDate}</div>
+                        ${doc.questionCount > 0 ? `
+                            <div class="doc-stats">
+                                <div class="stat-row">
+                                    <span class="stat-label">Questions:</span>
+                                    <span class="stat-value">${doc.questionCount}</span>
+                                </div>
+                                ${stats.answered > 0 ? `
+                                    <div class="stat-row">
+                                        <span class="stat-label">Answered:</span>
+                                        <span class="stat-value">${stats.answered}/${stats.total}</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Correct:</span>
+                                        <span class="stat-value stat-correct">${stats.correct} (${stats.percentage}%)</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${stats.percentage}%"></div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                        <div class="button-group">
+                            ${doc.questionCount === 0 ? `
+                                <button class="btn-primary" onclick="generateQuestions(${doc.id})">Generate Questions</button>
+                            ` : `
+                                <button class="btn-success" onclick="startQuiz(${doc.id})">▶ Start Quiz</button>
+                                <button class="btn-secondary" onclick="generateQuestions(${doc.id})">Regenerate Questions</button>
+                                ${stats.answered > 0 ? `<button class="btn-secondary" onclick="resetProgress(${doc.id})">↻ Reset Progress</button>` : ''}
+                            `}
+                            <button class="btn-danger" onclick="deleteDocument(${doc.id})">🗑 Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderQuiz() {
+            document.getElementById('libraryView').classList.add('hidden');
+            document.getElementById('quizView').classList.remove('hidden');
+
+            const currentQuestion = questions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+            document.getElementById('questionCounter').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            const difficultyMap = {
+                easy: 'difficulty-easy',
+                medium: 'difficulty-medium',
+                hard: 'difficulty-hard'
+            };
+            document.getElementById('difficultyBadge').textContent = currentQuestion.difficulty.toUpperCase();
+            document.getElementById('difficultyBadge').className = 'difficulty-badge ' + difficultyMap[currentQuestion.difficulty];
+
+            document.getElementById('questionText').textContent = currentQuestion.question;
+
+            const optionsGroup = document.getElementById('optionsGroup');
+            optionsGroup.innerHTML = ['A', 'B', 'C', 'D'].map(option => `
+                <button class="option-btn" 
+                    onclick="handleAnswerSelect('${option}')"
+                    ${showAnswer ? 'disabled' : ''}
+                    ${selectedAnswer === option ? (option === currentQuestion.correctAnswer ? 'selected-correct' : 'selected-incorrect') : ''}
+                    ${showAnswer && option === currentQuestion.correctAnswer ? 'correct-answer' : ''}
+                >
+                    <div class="option-label">
+                        <div class="option-key">${option}.</div>
+                        <div class="option-text">${currentQuestion.options[option]}</div>
+                    </div>
+                </button>
+            `).join('');
+
+            const feedbackSection = document.getElementById('feedbackSection');
+            if (showAnswer) {
+                const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+                const feedbackBox = document.getElementById('feedbackBox');
+                feedbackBox.className = `feedback ${isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
+                feedbackBox.innerHTML = `
+                    <div class="feedback-icon">${isCorrect ? '✓' : '✕'}</div>
+                    <div class="feedback-content">
+                        <div class="feedback-title">${isCorrect ? 'Correct!' : 'Incorrect'}</div>
+                        <div class="feedback-text">${currentQuestion.explanation}</div>
+                        <div class="source-box">
+                            <div class="source-label">Source Location:</div>
+                            <div class="source-text">"${currentQuestion.sourceLocation}"</div>
+                        </div>
+                    </div>
+                `;
+                feedbackSection.classList.remove('hidden');
+                document.getElementById('nextBtnText').textContent = 
+                    currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz';
+            } else {
+                feedbackSection.classList.add('hidden');
+            }
+        }
+
+        function handleAnswerSelect(answer) {
+            if (showAnswer) return;
+            selectedAnswer = answer;
+            showAnswer = true;
+
+            if (answer === questions[currentQuestionIndex].correctAnswer) {
+                scores[questions[currentQuestionIndex].id] = 'correct';
+            } else {
+                scores[questions[currentQuestionIndex].id] = 'incorrect';
+            }
+            saveData();
+            renderQuiz();
+        }
+
+        function goToNextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showAnswer = false;
+                selectedAnswer = null;
+                renderQuiz();
+            } else {
+                endQuiz();
+            }
+        }
+
+        function endQuiz() {
+            quizStarted = false;
+            renderLibrary();
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>
