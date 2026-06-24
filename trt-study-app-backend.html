@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRT Study Hub</title>
+<style>
+:root {
+  --ink: #0b1220;
+  --panel: #131c2e;
+  --panel-2: #0e1626;
+  --line: #243047;
+  --line-soft: #1b2538;
+  --text: #e6ecf5;
+  --muted: #8a99b3;
+  --signal: #ff5a36;       /* fire-line orange, used with restraint */
+  --signal-dim: rgba(255,90,54,0.12);
+  --go: #34d399;
+  --go-dim: rgba(52,211,153,0.14);
+  --warn: #f4c152;
+  --bad: #f4607a;
+  --bad-dim: rgba(244,96,122,0.14);
+  --radius: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(255,90,54,0.06), transparent 60%),
+    var(--ink);
+  min-height: 100vh;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 20px; }
+
+h1, h2, h3 { letter-spacing: -0.01em; }
+.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+/* ---------- AUTH ---------- */
+.auth-screen {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(900px 500px at 50% -20%, rgba(255,90,54,0.10), transparent 60%),
+    var(--ink);
+  padding: 20px;
+}
+.auth-screen.hidden { display: none; }
+.auth-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 36px;
+  width: 100%; max-width: 400px;
+}
+.brand-mark {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-weight: 700; font-size: 13px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 22px;
+}
+.brand-mark::before {
+  content: ""; width: 22px; height: 3px; border-radius: 2px;
+  background: var(--signal);
+}
+.auth-card h1 { font-size: 26px; margin-bottom: 6px; }
+.auth-card .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+
+.field { margin-bottom: 15px; }
+.field label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 12.5px; color: var(--muted); }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 11px 13px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel-2); color: var(--text); font-size: 14px;
+  font-family: inherit;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--signal);
+  box-shadow: 0 0 0 3px var(--signal-dim);
+}
+.field textarea { min-height: 72px; resize: vertical; }
+
+button { border: none; border-radius: var(--radius); font-weight: 600; font-size: 14px; cursor: pointer; transition: transform .04s, background .15s, border-color .15s; font-family: inherit; color: var(--text); }
+button:active { transform: translateY(1px); }
+.btn-go { width: 100%; padding: 12px; background: var(--signal); color: #fff; }
+.btn-go:hover { background: #ff6f50; }
+.btn-quiet { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+.btn-quiet:hover { border-color: var(--muted); }
+.btn-bad { background: var(--bad-dim); color: var(--bad); border: 1px solid transparent; }
+.btn-bad:hover { border-color: var(--bad); }
+
+.toggle-auth { text-align: center; margin-top: 18px; font-size: 13px; color: var(--muted); }
+.toggle-auth a { color: var(--signal); cursor: pointer; font-weight: 600; }
+
+/* ---------- HEADER ---------- */
+.topbar {
+  border-bottom: 1px solid var(--line-soft);
+  background: rgba(11,18,32,0.6);
+  backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-in { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.logo .tick { width: 20px; height: 3px; background: var(--signal); border-radius: 2px; }
+.who { display: flex; gap: 14px; align-items: center; }
+.who .name { font-weight: 600; font-size: 13px; text-align: right; }
+.who .role { font-size: 11px; color: var(--muted); }
+.who .role.admin { color: var(--warn); }
+
+/* ---------- TABS ---------- */
+.tabrow { display: flex; gap: 4px; margin: 22px 0; border-bottom: 1px solid var(--line-soft); }
+.tab { padding: 10px 16px; background: none; color: var(--muted); font-weight: 600; font-size: 13.5px; border-bottom: 2px solid transparent; border-radius: 0; }
+.tab.on { color: var(--text); border-bottom-color: var(--signal); }
+
+/* ---------- CARDS ---------- */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+.card h2 { font-size: 17px; margin-bottom: 4px; }
+.card .lead { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+@media (max-width: 760px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.stat .v { font-size: 26px; font-weight: 700; }
+.stat .v.accent { color: var(--signal); }
+.stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+/* ---------- TOPIC PICKER ---------- */
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.topic {
+  text-align: left; background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 12px; padding: 15px; cursor: pointer; position: relative;
+}
+.topic:hover { border-color: var(--signal); }
+.topic.sel { border-color: var(--signal); box-shadow: 0 0 0 3px var(--signal-dim); }
+.topic .t-name { font-weight: 650; font-size: 14px; margin-bottom: 3px; }
+.topic .t-meta { font-size: 11.5px; color: var(--muted); }
+.topic .t-count {
+  position: absolute; top: 13px; right: 13px;
+  font-size: 11px; color: var(--muted);
+  background: var(--ink); border: 1px solid var(--line);
+  border-radius: 20px; padding: 2px 8px;
+}
+
+.controls-line { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.controls-line .field { margin-bottom: 0; flex: 1; min-width: 140px; }
+
+/* ---------- QUIZ ---------- */
+.q-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+.bar { height: 4px; background: var(--line-soft); border-radius: 2px; overflow: hidden; margin-bottom: 20px; }
+.bar > span { display: block; height: 100%; background: var(--signal); transition: width .3s; }
+.q-text { font-size: 17px; font-weight: 600; line-height: 1.45; margin-bottom: 18px; }
+.opts { display: grid; gap: 9px; }
+.opt {
+  background: var(--panel-2); border: 1.5px solid var(--line); border-radius: var(--radius);
+  padding: 13px 15px; cursor: pointer; font-size: 14px; text-align: left; line-height: 1.4;
+}
+.opt:hover { border-color: var(--muted); }
+.opt.sel { border-color: var(--signal); background: var(--signal-dim); }
+.opt.right { border-color: var(--go); background: var(--go-dim); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-dim); }
+.opt:disabled { cursor: default; }
+
+.explain { margin-top: 16px; padding: 14px; background: var(--panel-2); border-left: 3px solid var(--line); border-radius: 8px; font-size: 13.5px; line-height: 1.5; color: #c4cfe0; }
+.explain.right { border-left-color: var(--go); }
+.explain.wrong { border-left-color: var(--bad); }
+.verdict { font-weight: 700; margin-bottom: 6px; }
+.verdict.right { color: var(--go); }
+.verdict.wrong { color: var(--bad); }
+
+/* ---------- RESULTS ---------- */
+.result { text-align: center; }
+.ring {
+  width: 116px; height: 116px; border-radius: 50%; margin: 18px auto;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; font-weight: 800;
+  background: conic-gradient(var(--signal) calc(var(--p) * 1%), var(--line-soft) 0);
+}
+.ring > span { width: 92px; height: 92px; border-radius: 50%; background: var(--panel); display: flex; align-items: center; justify-content: center; }
+.result-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.result-line:last-child { border: none; }
+
+/* ---------- LISTS ---------- */
+.row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+.row:last-child { border: none; }
+.row .score { color: var(--signal); font-weight: 700; }
+.muted-note { color: var(--muted); font-size: 13px; }
+
+/* ---------- ADMIN QUESTION ITEMS ---------- */
+.qitem { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; margin-bottom: 11px; }
+.qitem .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+.qitem .qq { font-weight: 600; font-size: 14px; line-height: 1.4; }
+.pill { font-size: 10.5px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; height: fit-content; }
+.pill.easy { background: var(--go-dim); color: var(--go); }
+.pill.medium { background: rgba(244,193,82,0.16); color: var(--warn); }
+.pill.hard { background: var(--bad-dim); color: var(--bad); }
+.qitem .opts-line { font-size: 12.5px; color: var(--muted); margin-bottom: 9px; line-height: 1.6; }
+.qitem .opts-line .ok { color: var(--go); font-weight: 600; }
+
+/* ---------- MISC ---------- */
+.hidden { display: none !important; }
+.note { padding: 12px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 14px; line-height: 1.45; }
+.note.ok { background: var(--go-dim); color: #8df0c4; }
+.note.err { background: var(--bad-dim); color: #ffb3c2; }
+.note.info { background: rgba(255,90,54,0.08); color: #ffc3b2; border: 1px solid rgba(255,90,54,0.2); }
+.split { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+.backend-flag { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line); color: var(--muted); }
+.backend-flag.live { color: var(--go); border-color: var(--go); }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="brand-mark">TRT Study Hub</div>
+    <h1 id="authTitle">Sign in</h1>
+    <div class="subtitle" id="authSubtitle">Pick up where you left off.</div>
+
+    <div id="authNote"></div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="field hidden" id="nameField">
+      <label for="name">Full name</label>
+      <input type="text" id="name" placeholder="First Last">
+    </div>
+
+    <button class="btn-go" onclick="handleAuth()" id="authBtn">Sign in</button>
+
+    <div class="toggle-auth">
+      <span id="toggleText">New here? </span>
+      <a onclick="toggleAuthMode()" id="toggleLink">Create an account</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="wrap topbar-in">
+      <div class="logo"><span class="tick"></span> TRT Study Hub</div>
+      <div class="who">
+        <span class="backend-flag" id="backendFlag">local</span>
+        <div>
+          <div class="name" id="whoName">—</div>
+          <div class="role" id="whoRole">Student</div>
+        </div>
+        <button class="btn-quiet" style="padding:8px 12px;font-size:12px;" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabrow" id="tabrow">
+      <button class="tab on" id="tab-study" onclick="go('study')">Study</button>
+      <button class="tab hidden" id="tab-manage" onclick="go('manage')">Manage questions</button>
+    </div>
+
+    <!-- ====== STUDY: HOME ====== -->
+    <div id="view-home">
+      <div class="stat-row">
+        <div class="stat"><div class="v" id="s-answered">0</div><div class="l">Answered</div></div>
+        <div class="stat"><div class="v accent" id="s-avg">0%</div><div class="l">Avg score</div></div>
+        <div class="stat"><div class="v" id="s-sessions">0</div><div class="l">Sessions</div></div>
+        <div class="stat"><div class="v" id="s-bank">0</div><div class="l">In bank</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Start a session</h2>
+        <div class="lead">Choose a topic, then how many questions and what difficulty.</div>
+        <div id="studyNote"></div>
+
+        <div class="topic-grid" id="topicGrid"></div>
+
+        <div class="controls-line">
+          <div class="field">
+            <label for="numQ">Questions</label>
+            <input type="number" id="numQ" min="1" max="50" value="10">
+          </div>
+          <div class="field">
+            <label for="diff">Difficulty</label>
+            <select id="diff">
+              <option value="all">All levels</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <button class="btn-go" style="flex:0 0 auto;padding:11px 22px;" onclick="startQuiz()">Begin</button>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="card" style="margin:0;">
+          <h2>Recent sessions</h2>
+          <div class="lead">Your last few runs.</div>
+          <div id="recent"></div>
+        </div>
+        <div class="card" style="margin:0;">
+          <h2>Leaderboard</h2>
+          <div class="lead">Top average across the class.</div>
+          <div id="board"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== STUDY: QUIZ ====== -->
+    <div id="view-quiz" class="hidden">
+      <div class="card">
+        <div class="q-meta">
+          <span><span id="qNow">1</span> / <span id="qTotal">10</span> · <span id="qTopic">—</span></span>
+          <span class="mono" id="qTime">0s</span>
+        </div>
+        <div class="bar"><span id="qBar" style="width:0%"></span></div>
+
+        <div id="qArea">
+          <div class="q-text" id="qText">…</div>
+          <div class="opts" id="qOpts"></div>
+          <button class="btn-go" id="qSubmit" style="margin-top:18px;" onclick="submitAnswer()" disabled>Submit</button>
+        </div>
+
+        <div id="qResult" class="hidden">
+          <div id="qExplain"></div>
+          <button class="btn-go" style="margin-top:16px;" onclick="nextQ()" id="qNext">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== STUDY: RESULTS ====== -->
+    <div id="view-results" class="hidden">
+      <div class="card result">
+        <h2>Session complete</h2>
+        <div class="ring" id="ring" style="--p:0"><span id="ringPct">0%</span></div>
+        <div style="font-weight:700;font-size:17px;margin-bottom:18px;" id="resultMsg">—</div>
+        <div style="text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px;">
+          <div class="result-line"><span>Questions</span><span id="r-total">0</span></div>
+          <div class="result-line"><span>Correct</span><span id="r-correct">0</span></div>
+          <div class="result-line"><span>Time</span><span id="r-time">0s</span></div>
+          <div class="result-line"><span>Score</span><span id="r-score">0%</span></div>
+        </div>
+        <button class="btn-go" onclick="go('study')">Back to topics</button>
+      </div>
+    </div>
+
+    <!-- ====== MANAGE (admin only) ====== -->
+    <div id="view-manage" class="hidden">
+      <div class="card">
+        <h2>Add a question</h2>
+        <div class="lead">Questions you add here join the shared bank for the topic you choose.</div>
+        <div id="manageNote"></div>
+
+        <div class="field">
+          <label for="mTopic">Topic</label>
+          <select id="mTopic"></select>
+        </div>
+        <div class="field">
+          <label for="mQ">Question</label>
+          <textarea id="mQ" placeholder="What is the maximum height for a T-Spot shore?"></textarea>
+        </div>
+        <div class="controls-line" style="margin-bottom:15px;">
+          <div class="field" style="margin:0;"><label>Option A</label><input id="mO0"></div>
+          <div class="field" style="margin:0;"><label>Option B</label><input id="mO1"></div>
+        </div>
+        <div class="controls-line" style="margin-bottom:15px;">
+          <div class="field" style="margin:0;"><label>Option C</label><input id="mO2"></div>
+          <div class="field" style="margin:0;"><label>Option D</label><input id="mO3"></div>
+        </div>
+        <div class="controls-line" style="margin-bottom:15px;">
+          <div class="field" style="margin:0;">
+            <label>Correct answer</label>
+            <select id="mCorrect"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label>Difficulty</label>
+            <select id="mDiff"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="mExplain">Explanation (cite the SOP / FOG page)</label>
+          <textarea id="mExplain" placeholder="FOG p.2-15: max height is 11 ft."></textarea>
+        </div>
+        <button class="btn-go" onclick="addQuestion()">Add to bank</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <h2 style="margin:0;">Custom questions</h2>
+          <select id="filterTopic" style="width:auto;padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--text);font-size:13px;" onchange="renderManageList()"></select>
+        </div>
+        <div class="lead">Added by instructors. Built-in questions aren't shown here.</div>
+        <div id="manageList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================================
+   CONFIG  —  paste your Supabase values here when ready.
+   Leave them blank to run fully on this device (localStorage).
+   ===================================================================== */
+const SUPABASE_URL  = "";   // e.g. https://abcd1234.supabase.co
+const SUPABASE_ANON = "";   // the public "anon" key
+const ADMIN_EMAIL   = "smorejon1@gmail.com";
+
+/* =====================================================================
+   TOPICS  —  one entry per SOP + shoring. Add as many as you need.
+   The `id` is permanent (don't rename it once questions exist).
+   ===================================================================== */
+const TOPICS = [
+  { id: "sop-activation",  name: "SOP 7-1 · TRT Activation",      blurb: "Activation conditions, response, Phase I" },
+  { id: "sop-extrication", name: "SOP 7-2 · Vehicle Extrication", blurb: "Action circle, assignment, patient care" },
+  { id: "sop-rope",        name: "SOP 7-3 · Rope Rescue",         blurb: "Angles, evacuations, anchors, cranes" },
+  { id: "sop-confined",    name: "SOP 7-4 · Confined Space",      blurb: "Atmosphere, SABA, entry teams" },
+  { id: "sop-trench",      name: "SOP 7-5 · Trench Rescue",       blurb: "Collapse zone, protective systems, entry" },
+  { id: "sop-collapse",    name: "SOP 7-6 · Structural Collapse", blurb: "Markings, hailing, voids, cribbing" },
+  { id: "shoring",         name: "Shoring Systems",               blurb: "T-spot, double-T, 2-post, gussets, nails" },
+];
+
+/* =====================================================================
+   BUILT-IN QUESTION BANK  —  keyed by topic id.
+   We'll grow these as you paste each SOP. Shoring is seeded below.
+   ===================================================================== */
+const BUILTIN = {
+  "sop-activation": [
+    {"q":"How many rescue conditions trigger a Technical Rescue Team (TRT) assignment?","o":["Three","Four","Five","Six"],"a":2,"d":"easy","e":"SOP 7-1: Rope, confined space, excavation/trench, structural collapse, and vehicle & machinery — five conditions."},
+    {"q":"What does the abbreviation TRT stand for?","o":["Tactical Response Team","Technical Rescue Team","Trench Rescue Technician","Total Recovery Team"],"a":1,"d":"easy","e":"SOP 7-1: TRT stands for Technical Rescue Team."},
+    {"q":"An excavation/trench emergency is defined as a depression, trench, or earth wall of at least what depth?","o":["2 feet","4 feet","6 feet","8 feet"],"a":1,"d":"easy","e":"SOP 7-1: Four feet or deeper, or any excavation deeper than it is wide."},
+    {"q":"Which unit is part of a standard Technical Rescue Team assignment?","o":["Battalion 1","Engine 9","Tower 5","Rescue 7"],"a":0,"d":"easy","e":"SOP 7-1: A TRT assignment includes Battalion 1, Engine 2, Rescue 2, and Squad 2/Ladder 2."},
+    {"q":"Who initiates the command process by giving the initial radio report?","o":["The Battalion Chief","Dispatch","The first arriving CGFD unit","The Safety Officer"],"a":2,"d":"easy","e":"SOP 7-1: The first arriving CGFD unit initiates command with the initial radio report."},
+    {"q":"A trench also qualifies as an emergency, regardless of a 4-foot depth, when it is:","o":["Wider than it is deep","Deeper than it is wide","Longer than 50 feet","On a construction site"],"a":1,"d":"easy","e":"SOP 7-1: Any excavation deeper than it is wide presents a collapse/entrapment risk."},
+    {"q":"Confined space incidents include which of the following?","o":["Sewers, tunnels, pipes, and tanks","Open fields","Rooftops","Stairwells only"],"a":0,"d":"easy","e":"SOP 7-1: Confined spaces involve sewers, tunnels, pipes, tanks, or similar restricted spaces."},
+    {"q":"Besides requesting the TRT assignment, the initial radio report must request a:","o":["Police escort","Staff notification","Second alarm","Hazmat decon"],"a":1,"d":"easy","e":"SOP 7-1: The radio report includes a request for a Staff Notification."},
+    {"q":"In a Single Unit Response, how many personnel respond on Squad 2?","o":["Two","Three","Four","Six"],"a":2,"d":"easy","e":"SOP 7-1: Single Unit Response = all four personnel respond on Squad 2 as a single company."},
+    {"q":"In a Multi-Unit Response, how are personnel divided?","o":["3 on Squad 2, 1 on Ladder 2","2 on Squad 2, 2 on Ladder 2","4 on Ladder 2","2 on Rescue 2, 2 on Squad 2"],"a":1,"d":"easy","e":"SOP 7-1: Multi-Unit = 2 personnel on Squad 2 and 2 on Ladder 2; both apparatus respond."},
+    {"q":"For a building collapse, the safety zone should be established at what distance?","o":["Equal to the height of the structure","1½ times the height","2 times the height","2½ times the height"],"a":3,"d":"medium","e":"SOP 7-1: Phase I sets the building-collapse safety zone at 2½ times the height of the structure."},
+    {"q":"For a trench, the apparatus should remain at least how far from the location of the trench failure?","o":["25 feet","50 feet","100 feet","150 feet"],"a":1,"d":"medium","e":"SOP 7-1: Apparatus remains at least 50 feet from the trench failure."},
+    {"q":"Additional resources beyond the TRT assignment are requested by whom?","o":["Dispatch","The Safety Officer","The Incident Commander","The Rescue Lieutenant"],"a":2,"d":"medium","e":"SOP 7-1: Additional resources are requested as deemed necessary by the IC."},
+    {"q":"During Phase I, what is the very first action upon arrival?","o":["Establish the command post","Perform a 360-degree safety survey and size-up","Locate the foreman","Start ventilation"],"a":1,"d":"medium","e":"SOP 7-1: Phase I begins with a 360-degree safety survey and size-up of the scene."},
+    {"q":"Why must first-due engine companies stretch hose lines to the scene?","o":["For decontamination","In case of potential fire or explosion","To wash debris","For atmospheric monitoring"],"a":1,"d":"medium","e":"SOP 7-1: Hose lines are stretched in case of potential fire or explosion."},
+    {"q":"A vehicle and machinery rescue applies when a victim is pinned due to:","o":["A minor fender bender","Compromised structural integrity of the vehicle or machine","Refusing to exit","A locked door only"],"a":1,"d":"medium","e":"SOP 7-1: It applies when the victim is physically pinned by compromised structural integrity, or confined and unable to self-extricate."},
+    {"q":"A critical conscious decision required during Phase I scene size-up is whether the incident is a:","o":["Code 3 or Code 2 response","Rescue or recovery","Single or multi-unit response","High or low angle"],"a":1,"d":"medium","e":"SOP 7-1: Crews must make a conscious decision as to whether this is a rescue or recovery."},
+    {"q":"Which of the following is NOT one of the five TRT activation conditions?","o":["Rope rescue incident","Hazardous materials spill","Structural collapse","Confined space incident"],"a":1,"d":"medium","e":"SOP 7-1: The five conditions are rope, confined space, trench/excavation, structural collapse, and vehicle/machinery — hazmat is not a TRT activation condition."},
+    {"q":"Per the definitions, confined-space characteristics may ALSO apply to which spaces?","o":["Parking garages and lobbies","Basements, attics, or similarly configured spaces","Elevator shafts only","Hospital rooms"],"a":1,"d":"hard","e":"SOP 7-1: The definition notes these characteristics may also apply to basements, attics, or similarly configured spaces."},
+    {"q":"Structural collapse is defined to include the failure of which structural components?","o":["Only multi-story buildings","Buildings, bridges, scaffolding, or trenches","Only residential homes","Vehicles and machinery"],"a":1,"d":"hard","e":"SOP 7-1: Structural collapse includes buildings, bridges, scaffolding, or trenches where integrity is compromised."},
+    {"q":"The initial radio report must include the assumption and identification of:","o":["The exposure problem","Command","The water supply","The rehab sector"],"a":1,"d":"hard","e":"SOP 7-1: The report includes assumption and identification of Command."},
+    {"q":"After completing the initial radio report, the first arriving unit shall initiate:","o":["Phase 2 of the technical rescue","Phase 1 of the technical rescue","A second alarm","Patient packaging"],"a":1,"d":"hard","e":"SOP 7-1: Upon completing the report, the first arriving unit initiates Phase 1 (Scene Preparation and Reconnaissance)."},
+    {"q":"During size-up, crews must determine the danger of fire travel specifically in:","o":["Adjacent buildings","Confined spaces","Vehicles","Open areas"],"a":1,"d":"hard","e":"SOP 7-1: Determine the nature/extent of damage, mechanisms of entrapment, and danger of fire travel in confined spaces."},
+    {"q":"At the close of Phase I, the first arriving unit should:","o":["Begin patient removal","Await the TRT and assist in initiating Phase 2","Terminate the incident","Demobilize hose lines"],"a":1,"d":"hard","e":"SOP 7-1: Phase I ends by awaiting TRT and assisting in initiating Phase 2, per the specific rescue SOG."},
+    {"q":"A vehicle/machinery rescue also applies when the victim is confined and unable to self-extricate even though they:","o":["Are uninjured","Can move within the compartment","Refuse help","Have called 911"],"a":1,"d":"hard","e":"SOP 7-1: It applies where the victim is unable to self-extricate due to damage/obstruction despite being able to move within the compartment."},
+  ],
+  "sop-extrication": [
+    {"q":"What is the purpose of SOP 7-2?","o":["To define rope angles","To standardize the department's response to vehicle extrication","To set hazmat limits","To outline trench shoring"],"a":1,"d":"easy","e":"SOP 7-2: It standardizes CGFD's response and handling of any vehicle extrication."},
+    {"q":"What is the approximate circumference of the action circle at a vehicle extrication?","o":["10 feet","25 feet","50 feet","100 feet"],"a":1,"d":"easy","e":"SOP 7-2: The action circle is approximately 25 feet in circumference."},
+    {"q":"What is the minimum charged hose line that must be staffed at all times during extrication?","o":["1 inch","1¾ inch","2½ inch","Booster line"],"a":1,"d":"easy","e":"SOP 7-2: Establish at minimum a 1¾\" line, charged and staffed at all times."},
+    {"q":"After vehicle placement, what is the next step for the first arriving unit?","o":["Gain access","Establish command","Stabilize the vehicle","Triage patients"],"a":1,"d":"easy","e":"SOP 7-2: Step 2 for the first arriving unit is to establish command."},
+    {"q":"Scene survey and patient triage is best accomplished using which method?","o":["The grid method","The outer/inner survey method","The clock method","The quadrant method"],"a":1,"d":"easy","e":"SOP 7-2: Survey the scene and triage patients using the outer/inner survey method."},
+    {"q":"Personnel inside the action circle must wear what?","o":["Reflective traffic vests only","Full protective gear","Hazmat suits","Hearing protection only"],"a":1,"d":"easy","e":"SOP 7-2: All personnel inside the action circle shall be in full protective gear."},
+    {"q":"Personnel NOT in the action circle (e.g., driver engineer) shall wear:","o":["Full turnout gear","Issued reflective traffic vests","SCBA","Nothing special"],"a":1,"d":"easy","e":"SOP 7-2: Those outside the action circle wear issued reflective traffic vests."},
+    {"q":"In all cases of vehicle entrapment, the primary concern is:","o":["Vehicle preservation","Safety to life","Roadway reopening","Tool inventory"],"a":1,"d":"easy","e":"SOP 7-2: The primary concern is always safety to life."},
+    {"q":"An Extrication Assignment includes how many suppression units?","o":["One","Two","Three","Four"],"a":1,"d":"medium","e":"SOP 7-2: The assignment includes 1 Battalion Chief, 2 suppression units, 2 rescue units, and 1 Squad combined with Ladder personnel."},
+    {"q":"An Extrication Assignment includes how many rescue units?","o":["One","Two","Three","Four"],"a":1,"d":"medium","e":"SOP 7-2: Two rescue units are part of the Extrication Assignment."},
+    {"q":"At an extrication, overall scene control belongs to the IC; patient care is controlled by the:","o":["Rescue Captain","Medical Group Leader","Safety Officer","Triage Officer"],"a":1,"d":"medium","e":"SOP 7-2: Patient care is under the Medical Group Leader, while the overall scene is under the IC."},
+    {"q":"Ultimate responsibility at a vehicle extrication scene lies with whom?","o":["The Medical Group Leader","The Incident Commander","The Squad Officer","The senior paramedic"],"a":1,"d":"medium","e":"SOP 7-2: Ultimate responsibility lies with the IC, using judgment informed by the Medical Group Leader's advice."},
+    {"q":"When determining resources, which special hazard is specifically called out?","o":["Diesel vehicles","Electric Vehicles (EVs)","Motorcycles","Box trucks"],"a":1,"d":"medium","e":"SOP 7-2: The IC should consider special hazards such as Electric Vehicles (EVs) — refer to the EV SOG."},
+    {"q":"Who should be granted access to the action circle?","o":["Anyone in turnout gear","Only those working extrication, patient care, or hazard control","Law enforcement","Media with credentials"],"a":1,"d":"medium","e":"SOP 7-2: Command strictly controls action-circle access to those working extrication, assigned to patient care, or controlling hazards."},
+    {"q":"When is an Extrication Assignment requested?","o":["On every MVA","As soon as entrapment is confirmed and extrication is needed","Only if there is fire","After patient transport"],"a":1,"d":"medium","e":"SOP 7-2: Once the need for extrication is established (confirmed entrapment), the IC requests the Extrication Assignment."},
+    {"q":"After gaining access to the patient, the next priority is to:","o":["Remove the roof","Perform a primary survey, establish an airway, and provide spinal immobilization","Prepare for transport","Stage tools"],"a":1,"d":"medium","e":"SOP 7-2: Gain access, then perform the primary survey, establish an airway, and simultaneously provide spinal immobilization and care."},
+    {"q":"The action circle and a separate ___ must be established early in the operation.","o":["Decon corridor","Tool staging area","Press area","Helicopter LZ"],"a":1,"d":"medium","e":"SOP 7-2: Establish a tool staging area and the action circle."},
+    {"q":"Vehicle placement at an extrication shall be in accordance with which guideline?","o":["The EV SOG","Highway Scene Safety Procedures SOG","Rope Rescue SOG","Confined Space SOG"],"a":1,"d":"medium","e":"SOP 7-2: Vehicles are positioned per the Highway Scene Safety Procedures SOG."},
+    {"q":"Command procedures at an extrication may include which ICS divisions/groups?","o":["Only extrication and triage","Extrication, triage, treatment, hazard control, tool/resource, crowd control, and transportation","Only command and rehab","Suppression and overhaul"],"a":1,"d":"hard","e":"SOP 7-2: Divisions/groups may include extrication, triage, treatment, hazard control, tool and resource, crowd control, and transportation."},
+    {"q":"For trauma patients, the critical time window is measured from the incident to:","o":["Arrival of the first unit","The patient's arrival at a trauma center and physician care","Extrication completion","Hospital discharge"],"a":1,"d":"hard","e":"SOP 7-2: Recovery is influenced by time from the incident to the patient's arrival at a designated trauma center and physician care."},
+    {"q":"The Squad in an Extrication Assignment responds combined with Ladder personnel as:","o":["Two separate companies","A single unit company on Squad 2","A reserve unit","A standby resource"],"a":1,"d":"hard","e":"SOP 7-2: The assignment lists 1 Squad combined with Ladder personnel as a single unit company on Squad 2."},
+    {"q":"Controlled movement and removal of material around the patient is performed in order to:","o":["Speed scene clearance","Properly package and remove the patient without further aggravating injuries","Recover the vehicle","Preserve evidence"],"a":1,"d":"hard","e":"SOP 7-2: Perform controlled movement/removal of obstructions to package and remove the patient without further aggravating injuries."},
+    {"q":"Some vehicle types (e.g., EVs) may require what change to the standard hose line setup?","o":["No charged line at all","Additional hose lines","A booster reel only","Foam only"],"a":1,"d":"hard","e":"SOP 7-2: A minimum 1¾\" charged line is required, but additional hose lines may be needed depending on vehicle type (e.g., EVs)."},
+    {"q":"After the patient is removed and prepared, the operation should:","o":["Leave equipment in place for investigators","Secure any equipment used and secure the scene","Demobilize immediately","Reopen the road first"],"a":1,"d":"hard","e":"SOP 7-2: The final steps are to prepare the patient for transport, secure equipment, and secure the scene."},
+    {"q":"Command procedures must include establishment, transfer, and development of:","o":["A water supply","ICS organization","A landing zone","A press pool"],"a":1,"d":"hard","e":"SOP 7-2: Command procedures must include establishment, transfer, and development of the ICS organization."},
+  ],
+  "sop-rope": [
+    {"q":"A non-technical evacuation is generally one with terrain less than what angle?","o":["30 degrees","40 degrees","50 degrees","60 degrees"],"a":1,"d":"easy","e":"SOP 7-3: Non-technical evacuations are generally less than 40 degrees inclination."},
+    {"q":"A technical evacuation involves terrain greater than what inclination?","o":["30 degrees","40 degrees","60 degrees","90 degrees"],"a":1,"d":"easy","e":"SOP 7-3: Technical evacuations are greater than 40 degrees, or rough terrain requiring Special Ops training."},
+    {"q":"Who establishes Command upon arriving at a rope rescue scene?","o":["The Safety Officer","The first arriving Company Officer","Dispatch","The TRT Group Leader"],"a":1,"d":"easy","e":"SOP 7-3: The first arriving Company Officer establishes Command after arriving on scene."},
+    {"q":"What is the minimum number of personnel designated to the Recon Team?","o":["One","Two","Three","Four"],"a":1,"d":"easy","e":"SOP 7-3: Command must designate a minimum of two personnel as the Recon Team."},
+    {"q":"Which reference standard is cited in the Rope Rescue SOG?","o":["NFPA 1500","NFPA 1561","NFPA 1670","NFPA 1971"],"a":2,"d":"easy","e":"SOP 7-3: The Rope Rescue SOG references NFPA 1670."},
+    {"q":"What should the Recon Team carry to begin care?","o":["Shoring lumber","Medical equipment / first aid","Atmospheric monitors","Breaching tools"],"a":1,"d":"easy","e":"SOP 7-3: The Recon Team should have medical equipment to begin administering first aid."},
+    {"q":"A stokes basket evacuation should be conducted with a minimum of how many attendants?","o":["Two","Three","Four","Six"],"a":2,"d":"easy","e":"SOP 7-3: A stokes evacuation should have a minimum of 4 attendants."},
+    {"q":"During a stokes evacuation, attendants should face which direction?","o":["The anchor","The direction of travel","Away from the patient","The IC"],"a":1,"d":"easy","e":"SOP 7-3: In a basic stokes evacuation, attendants face the direction of travel."},
+    {"q":"Evacuations greater than what angle are considered high-angle operations conducted by the TRT?","o":["40 degrees","50 degrees","60 degrees","75 degrees"],"a":2,"d":"easy","e":"SOP 7-3: Evacuations greater than 60 degrees are high-angle operations and the TRT conducts them."},
+    {"q":"For non-ambulatory patients on terrain greater than 40 degrees, how many litter attendants assist the stokes basket?","o":["Two","Three","At least four","Six"],"a":2,"d":"easy","e":"SOP 7-3: At least 4 litter attendants assist with the stokes basket evacuation on steep-angle terrain."},
+    {"q":"During a steep-angle (>40°) evacuation, attendants should face which direction?","o":["The direction of travel","The anchor","Downhill","The patient's feet"],"a":1,"d":"medium","e":"SOP 7-3: During steep-angle evacuation the attendants face the anchor."},
+    {"q":"Who designates the Safety Officer at a rope rescue, and who typically fills it?","o":["Dispatch; any firefighter","Command; usually a TRT member","The Recon Team; a paramedic","The IC; a police officer"],"a":1,"d":"medium","e":"SOP 7-3: Command designates the Safety Officer, usually 1 TRT member assigned to that function."},
+    {"q":"In what order should rescue operations be conducted?","o":["High risk to low risk","Low risk to high risk","Fastest first","By patient age"],"a":1,"d":"medium","e":"SOP 7-3: Rescue operations are conducted from low risk to high risk."},
+    {"q":"The lowest-risk rescue option for a patient not in a life-threatening situation is to:","o":["Use a crane","Talk the patient into self-rescue","Build an anchor immediately","Call a helicopter"],"a":1,"d":"medium","e":"SOP 7-3: The lowest-risk option is to talk the patient into self-rescue when not life-threatened."},
+    {"q":"In Phase Five (Termination), what must be called to account for all personnel and equipment?","o":["A PAR","A Mayday","A Level 1 staging","A size-up"],"a":0,"d":"medium","e":"SOP 7-3: Call for a PAR to confirm all personnel and equipment are accounted for."},
+    {"q":"Command may decide to wait for a TRT unit when terrain inclination is greater than:","o":["20 degrees","40 degrees","60 degrees","90 degrees"],"a":1,"d":"medium","e":"SOP 7-3: If terrain is greater than 40 degrees, Command may wait for TRT with proper equipment, based on a risk/benefit decision."},
+    {"q":"What rope technique shall be used in all rope rescue evacuations?","o":["Single rope technique","Double rope technique","Tandem prusik only","Z-rig only"],"a":1,"d":"medium","e":"SOP 7-3: In any case, double rope technique shall be used."},
+    {"q":"For the main line and belay line, what is the preferred anchoring approach?","o":["Share a single anchor","Use a separate anchor for each, if possible","Use no belay","Tie both to the apparatus"],"a":1,"d":"medium","e":"SOP 7-3: If possible, a separate anchor should be used for the main line and the belay line."},
+    {"q":"Crane operations for evacuation are classified as what type of operation?","o":["Low-risk","Routine","High-risk","Non-technical"],"a":2,"d":"hard","e":"SOP 7-3: Crane operations are considered high-risk operations."},
+    {"q":"Which is a factor that must be considered before using a construction crane for evacuation?","o":["Patient's insurance","Qualifications of the crane operator","Color of the crane","Time since last inspection only"],"a":1,"d":"hard","e":"SOP 7-3: Factors include time of day, condition of patients, difficult access, and the qualifications of the crane operator."},
+    {"q":"Before using a crane, permission must be obtained from whom (along with Command and TRT Group Leader)?","o":["The patient","The construction site foreman","OSHA","The Sheriff"],"a":1,"d":"hard","e":"SOP 7-3: Command, the TRT Group Leader, and permission from the construction site foreman are required to use a crane."},
+    {"q":"If an operation is determined to be a recovery, Command should coordinate with whom?","o":["The Medical Examiner only","The Sheriff's department","Public Works","The Red Cross"],"a":1,"d":"hard","e":"SOP 7-3: For recovery operations, Command coordinates with the Sheriff's department and may leave the patient/equipment in place for investigation."},
+    {"q":"During a high-angle stokes evacuation, what line setup is required?","o":["One combined line","A separate raising/lowering line and a belay line","Belay only","Main line only"],"a":1,"d":"hard","e":"SOP 7-3: A separate raising/lowering line and a separate belay line shall be set up for steep-angle evacuations."},
+    {"q":"The TRT Group Leader should always have what in case the first plan fails?","o":["A second crane","An alternative Action Plan communicated to all in the rescue area","A spare stokes","Extra rope only"],"a":1,"d":"hard","e":"SOP 7-3: The TRT Group Leader should have an alternate Action Plan communicated to all personnel in the rescue area."},
+    {"q":"For a crane evacuation, what must be established on the ground before lifting?","o":["A media zone","A stokes basket landing area","A decon line","A rehab tent"],"a":1,"d":"hard","e":"SOP 7-3: A stokes basket landing area shall be established, with communications between the TRT leader, crane operator liaison, and ground crew."},
+  ],
+  "sop-confined": [
+    {"q":"Confined spaces are NOT intended for what?","o":["Storage","Continual employee occupancy","Ventilation","Atmospheric monitoring"],"a":1,"d":"easy","e":"SOP 7-4: Confined spaces are areas not intended for continual employee occupancy with limited egress."},
+    {"q":"No one shall enter a confined space alone — always in teams of at least how many?","o":["One","Two","Three","Four"],"a":1,"d":"easy","e":"SOP 7-4: Never enter alone; always in teams of two as a minimum."},
+    {"q":"Teams shall be limited to how many minutes in any confined space?","o":["10 minutes","20 minutes","30 minutes","45 minutes"],"a":1,"d":"easy","e":"SOP 7-4: Teams shall be limited to twenty (20) minutes in any space."},
+    {"q":"Each entry team must have how many backup teams?","o":["None","One for every entry team","Two","One for every two entry teams"],"a":1,"d":"easy","e":"SOP 7-4: Assure one backup team for every entry team, on a separate airline system."},
+    {"q":"What is the oxygen-deficient threshold considered IDLH?","o":["Below 19.5%","Below 21%","Below 23.5%","Below 16%"],"a":0,"d":"easy","e":"SOP 7-4: Oxygen deficient is below 19.5%."},
+    {"q":"What is the oxygen-enriched threshold considered IDLH?","o":["Above 21%","Above 22%","Above 23.5%","Above 25%"],"a":2,"d":"easy","e":"SOP 7-4: Oxygen enriched is above 23.5%."},
+    {"q":"Atmospheres in a confined space shall be tested for oxygen deficiency, oxygen excess, toxicity, and:","o":["Humidity","Flammability","Temperature","Pressure"],"a":1,"d":"easy","e":"SOP 7-4: Test for oxygen deficiency, oxygen excess, toxicity, and flammability."},
+    {"q":"During occupancy, atmospheric monitoring shall occur at intervals no less than every:","o":["5 minutes","10 minutes","15 minutes","30 minutes"],"a":2,"d":"easy","e":"SOP 7-4: Monitoring during occupancy occurs at least every 15 minutes."},
+    {"q":"If you must remove your standard SCBA to fit through an opening, you should:","o":["Enter slowly","Do Not Enter","Hold your breath","Remove your harness too"],"a":1,"d":"easy","e":"SOP 7-4: If you must remove your standard SCBA to fit, Do Not Enter."},
+    {"q":"With a standard SCBA, entry is limited to reconnaissance only and no more than how far from the entrance?","o":["10 feet","25 feet","50 feet","100 feet"],"a":1,"d":"easy","e":"SOP 7-4: With standard SCBA, go no more than 25 feet from the entrance — recon only unless the victim is easily accessible."},
+    {"q":"Flammability becomes an IDLH concern at what percentage of the Lower Explosive Limit (LEL)?","o":["5%","10%","20%","50%"],"a":1,"d":"medium","e":"SOP 7-4: Flammability at 10% of the LEL is considered IDLH."},
+    {"q":"To avoid sparks when rigging or hauling inside a confined space, what hardware is required?","o":["Steel carabiners","Aluminum carabiners and hardware","Titanium hardware","Any rated hardware"],"a":1,"d":"medium","e":"SOP 7-4: Use only aluminum carabiners and hardware to avoid sparks."},
+    {"q":"Which removal method is preferred for patient extraction from a confined space?","o":["Electric winches","Mechanical advantage systems or manual winches","Pure manual hauling","Vehicle tow"],"a":1,"d":"medium","e":"SOP 7-4: Mechanical advantage systems or manual winches are preferred over manual hauling."},
+    {"q":"Why must electric winches NOT be used to remove patients?","o":["They are too slow","They allow little control and could cause dismemberment or injury","They are too heavy","They require permits"],"a":1,"d":"medium","e":"SOP 7-4: Electric winches allow little control and could result in dismemberment or additional injury."},
+    {"q":"All entry personnel must be equipped with what breathing apparatus for confined space entry?","o":["Standard SCBA only","SABA (supplied-air breathing apparatus)","An APR","A dust mask"],"a":1,"d":"medium","e":"SOP 7-4: All personnel entering must be equipped with SABA (supplied-air breathing apparatus)."},
+    {"q":"What is required of the backup team's air supply relative to the entry team?","o":["Same airline","A separate airline system","No air required","Shared bottle"],"a":1,"d":"medium","e":"SOP 7-4: The backup team must be equally attired and on a separate airline system."},
+    {"q":"For entry into a vertical shaft greater than 8 feet, each member must wear what and be attached to a fall-arresting system?","o":["A Class I harness","A Class II harness","A Class III harness","A ladder belt"],"a":2,"d":"medium","e":"SOP 7-4: For a vertical shaft greater than 8 feet, each member shall wear a Class III Harness attached to a fall-arresting system."},
+    {"q":"A hazardous atmosphere exists when flammable gas, vapor, or mist exceeds what percentage of its lower flammable limit (LFL)?","o":["5%","10%","20%","25%"],"a":1,"d":"hard","e":"SOP 7-4: A hazardous atmosphere includes flammable gas/vapor/mist in excess of 10% of its LFL."},
+    {"q":"\"Engulfment\" is defined as the capture of a person by a fluid substance that can cause death by aspiration or by:","o":["Freezing","Strangulation, constriction, or crushing","Electrocution","Burning"],"a":1,"d":"hard","e":"SOP 7-4: Engulfment can fill/plug the respiratory system or exert force causing strangulation, constriction, or crushing."},
+    {"q":"In the event of an air-line failure on a SABA, the rescuer shall first:","o":["Continue to the patient","Immediately leave the space and notify the exterior","Switch to room air","Buddy breathe and stay"],"a":1,"d":"hard","e":"SOP 7-4: On airline failure, immediately leave the space and notify the exterior of the line and the specific problem."},
+    {"q":"If the 15-minute bypass bottle runs out before exit and the airline problem is not corrected, what is acceptable?","o":["Removing the mask","Buddy breathing by passing the still-functional mainline back and forth","Breathing ambient air","Waiting in place"],"a":1,"d":"hard","e":"SOP 7-4: Buddy breathing by passing the functional mainline back and forth between systems is acceptable; do not leave the non-operational line behind."},
+    {"q":"During entry, a rescuer should be designated to do what for the entry team?","o":["Operate the winch","Log each member's time of entry and keep Operations apprised","Run atmospheric monitoring only","Take photographs"],"a":1,"d":"hard","e":"SOP 7-4: One technician logs each team member's entry time and keeps the Operations Sector apprised of each team's status."},
+    {"q":"When attempting to reach the patient, what type of approach is recommended if their location is known or suspected?","o":["A single-point approach","A two-prong attack","Aerial recon","Remote camera only"],"a":1,"d":"hard","e":"SOP 7-4: If possible, attempt a two-prong attack to reach the patient when their location is known or suspected."},
+    {"q":"When moving a patient through the only egress opening, team members should be positioned where?","o":["Behind the patient","On the egress side of the opening, to avoid being blocked in","Outside the space","Both sides equally"],"a":1,"d":"hard","e":"SOP 7-4: Whenever possible, station all team members on the egress side so they are not blocked in if the patient becomes lodged."},
+    {"q":"A \"Competent Person\" is defined as one who can identify hazardous conditions AND has authorization to:","o":["Enter any space","Take prompt corrective measures to eliminate those conditions","Override the IC","Sign the entry permit only"],"a":1,"d":"hard","e":"SOP 7-4: A Competent Person can identify existing/predictable hazardous conditions and has authorization to take prompt corrective measures to eliminate them."},
+  ],
+  "sop-trench": [
+    {"q":"By definition, the width of a trench is no greater than how many feet?","o":["10 feet","15 feet","20 feet","25 feet"],"a":1,"d":"easy","e":"SOP 7-5: A trench's width is no greater than 15 feet; generally the depth is greater than the width."},
+    {"q":"What is the first thing to do regarding any persons found in the trench during assessment?","o":["Interview them","Order them out immediately","Begin shoring around them","Provide water"],"a":1,"d":"easy","e":"SOP 7-5: Order any persons in the trench out immediately."},
+    {"q":"No one shall enter an excavation or trench alone — always in teams of at least:","o":["One","Two","Three","Four"],"a":1,"d":"easy","e":"SOP 7-5: Never enter a trench alone; always in teams of two as a minimum."},
+    {"q":"Teams are limited to how many minutes in any excavation or trench?","o":["15 minutes","20 minutes","30 minutes","45 minutes"],"a":2,"d":"easy","e":"SOP 7-5: Teams shall be limited to thirty (30) minutes in any excavation or trench."},
+    {"q":"Heavy equipment at a trench scene should be:","o":["Kept running","Turned off","Repositioned closer","Used for shoring"],"a":1,"d":"easy","e":"SOP 7-5: Order all heavy equipment to be turned off."},
+    {"q":"What color and type of barrier marks the perimeter at a trench scene?","o":["Yellow caution cones","Fire line tape with police at the access point","Red flares","Chalk lines"],"a":1,"d":"easy","e":"SOP 7-5: Establish a perimeter with fire line tape and assign police to assure an access point."},
+    {"q":"A class three harness for trench entry must be attached to what?","o":["A trench box","Lifelines","A ladder rung only","The shoring"],"a":1,"d":"easy","e":"SOP 7-5: Personnel entering must wear class three harnesses attached to lifelines."},
+    {"q":"Atmospheric monitoring in a trench occurs at intervals no less than every:","o":["10 minutes","15 minutes","20 minutes","30 minutes"],"a":1,"d":"easy","e":"SOP 7-5: Monitoring during occupancy occurs at least every 15 minutes."},
+    {"q":"Level 1 staging at a trench is recommended no closer than how far from the excavation?","o":["50 feet","100 feet","150 feet","300 feet"],"a":2,"d":"easy","e":"SOP 7-5: Recommend Level 1 staging no closer than 150 feet to the excavation."},
+    {"q":"The collapse zone should extend a minimum distance equal to what, measured back from the lip?","o":["Half the depth of the trench","The depth of the trench","Twice the depth of the trench","15 feet"],"a":1,"d":"easy","e":"SOP 7-5: Establish a collapse zone a minimum distance equal to the depth of the trench, measured back from the lip on all sides."},
+    {"q":"Ladders placed in the excavation must extend how far above the lip of the trench?","o":["1 foot","2 feet","3 feet","5 feet"],"a":2,"d":"medium","e":"SOP 7-5: Ladders must be 3 feet above the lip of the trench and within 25 feet from workers."},
+    {"q":"Placed ladders must be within how many feet of workers?","o":["10 feet","25 feet","50 feet","100 feet"],"a":1,"d":"medium","e":"SOP 7-5: Ladders must be within 25 feet from workers."},
+    {"q":"Which of these is an acceptable protective system for a trench?","o":["Trench shield or box","Caution tape","Plywood sheets only","Sandbags"],"a":0,"d":"medium","e":"SOP 7-5: Use a trench shield/box, pneumatic or hydraulic shores, and appropriate benching."},
+    {"q":"Which signs indicate potential for secondary collapse?","o":["Dry, firm soil","Fissures in the soil, chunks falling off, and free-seeping water causing erosion","Level ground","Heavy equipment nearby"],"a":1,"d":"medium","e":"SOP 7-5: Secondary collapse indicators include fissures, chunks of soil falling off, and free-seeping water causing erosion."},
+    {"q":"Soil and debris removed near a victim should be saved for inspection by which agency?","o":["The Sheriff","OSHA","The EPA","Public Works"],"a":1,"d":"medium","e":"SOP 7-5: Save all debris and soil for later inspection by OSHA; soil is removed in buckets onto a tarp."},
+    {"q":"A safety analysis at a trench must be performed at least how often?","o":["Every 10 minutes","Every 15 minutes","Every 30 minutes","Every hour"],"a":2,"d":"medium","e":"SOP 7-5: Perform a safety analysis every thirty (30) minutes, surveying for weakened walls, tension cracks, and fissures."},
+    {"q":"Each trench entry team requires what regarding backup?","o":["No backup needed","One backup team for every entry team, equally equipped","A backup only for deep trenches","Shared backup for all teams"],"a":1,"d":"medium","e":"SOP 7-5: Assure one backup team for every entry team; the backup team must be equally equipped."},
+    {"q":"Ground pads are placed around the face and sides of the excavation while doing what?","o":["Adding more personnel","Limiting the number of personnel around the trench","Running heavy equipment","Filling the trench"],"a":1,"d":"medium","e":"SOP 7-5: Place ground pads around the face and sides of the excavation, and limit the number of personnel around the trench."},
+    {"q":"When working close to a victim, debris should be removed how?","o":["With a backhoe","By hand or a small trowel","With a vacuum truck","With shovels quickly"],"a":1,"d":"hard","e":"SOP 7-5: Debris near a victim should be removed by hand or a small trowel — recognition of a body in a soil pile is difficult."},
+    {"q":"Which is a correct order of search priority among victims in a trench?","o":["Rescue easiest victims first","Search all areas for victims still alive and effect their release before victims with less chance of survival","Recover deceased first","Work fastest to slowest"],"a":1,"d":"hard","e":"SOP 7-5: Search all areas for victims who may still be alive and effect their release before attempting victims with less chance of survival."},
+    {"q":"Which rapid-evacuation device for a patient is named in the trench SOG?","o":["LSP Halfback","Yates Spec Rescue Pak","SKED only","Stokes basket"],"a":1,"d":"hard","e":"SOP 7-5: Each team carries a rapid evacuation harness such as the Yates Spec Rescue Pak."},
+    {"q":"At termination, the contractor or responsible party should do what to prevent additional collapse and entry?","o":["Seal with concrete","Backfill the excavation or trench if possible","Cover with plywood","Install permanent shoring"],"a":1,"d":"hard","e":"SOP 7-5: Have the contractor or responsible party backfill the excavation or trench if possible to assure no additional collapse and entry."},
+    {"q":"During termination, equipment should be removed in what manner?","o":["All at once","In reverse order, using the minimum number of rescuers","Left in place permanently","By heavy machinery"],"a":1,"d":"hard","e":"SOP 7-5: Remove all equipment in reverse order, sometimes leaving it for OSHA/Police; use the minimum number of rescuers."},
+    {"q":"Which three NFPA standards are referenced by the Trench Rescue SOG?","o":["1500, 1561, 1670","1001, 1002, 1006","472, 473, 1072","1710, 1720, 1851"],"a":0,"d":"hard","e":"SOP 7-5: References are NFPA 1500, NFPA 1561, and NFPA 1670."},
+    {"q":"Under no circumstances shall personnel enter an unprotected trench unless what is in place?","o":["A supervisor's verbal approval","Hazard assessment, atmospheric monitoring, and protective systems","Daylight conditions","A standby ambulance"],"a":1,"d":"hard","e":"SOP 7-5: No entry into an unprotected trench unless hazard assessment, atmospheric monitoring, and protective systems are in place — any deviation requires a documented risk/benefit analysis authorized by the IC."},
+  ],
+  "sop-collapse": [
+    {"q":"What is the recommended safety zone for a structural collapse?","o":["Equal to the building height","1½ times the height","Two times the height of the building","2½ times the height"],"a":2,"d":"easy","e":"SOP 7-6: Establish a safety zone two times the height of the building."},
+    {"q":"Only what color of spray paint is used for the structure/hazard marking system?","o":["Red","Orange","Yellow","White"],"a":1,"d":"easy","e":"SOP 7-6: Aerosol cans of orange spray paint only are used for the marking system."},
+    {"q":"What size box is outlined at an accessible entrance for structure marking?","o":["1' x 1'","2' x 2'","3' x 3'","4' x 4'"],"a":1,"d":"easy","e":"SOP 7-6: A 2' x 2' square box is outlined at any accessible entrance."},
+    {"q":"Which is a listed cause of structural failure?","o":["Routine maintenance","Engineering errors","Daily occupancy","Standard wind"],"a":1,"d":"easy","e":"SOP 7-6: Causes include natural occurrences, fire/explosion, human factors, and engineering errors."},
+    {"q":"What percentage of people rescued from collapsed structures are found as surface victims?","o":["10%","25%","50%","75%"],"a":2,"d":"easy","e":"SOP 7-6: Roughly 50% of people rescued from collapsed structures are surface victims (on top or lightly buried)."},
+    {"q":"No one shall enter a collapse space or void alone — always in teams of at least:","o":["One","Two","Three","Four"],"a":1,"d":"easy","e":"SOP 7-6: Always enter in teams of two as a minimum."},
+    {"q":"In the search marking 'X', what does a single slash drawn on entry indicate?","o":["Search complete","Search operations in progress","Structure unsafe","Hazardous material"],"a":1,"d":"easy","e":"SOP 7-6: A single slash on entry indicates search operations are currently in progress."},
+    {"q":"What do the initials 'HM' next to a marking box indicate?","o":["Heavy machinery","A hazardous material condition","Human remains","High moisture"],"a":1,"d":"easy","e":"SOP 7-6: HM indicates a hazardous material condition in or adjacent to the structure."},
+    {"q":"In the structure/hazard box, what does a single slash indicate?","o":["Safe for operations","Significantly damaged — some areas safe, others need shoring","Not safe at all","Confined space present"],"a":1,"d":"medium","e":"SOP 7-6: A single slash indicates the structure is significantly damaged; some areas are relatively safe, others may need shoring or hazard removal."},
+    {"q":"In the structure/hazard box, what does a crossing slash (X) indicate?","o":["Accessible and safe","Significantly damaged","Not safe — subject to sudden additional collapse","Search complete"],"a":2,"d":"medium","e":"SOP 7-6: A crossing slash means the structure is not safe and may be subject to sudden additional collapse; remote operations only."},
+    {"q":"In the search-assessment 'X', what does the LEFT quadrant denote?","o":["Time the team left","Personnel hazards","The identifier of the rescue team completing the search","Number of victims"],"a":2,"d":"medium","e":"SOP 7-6: Left quadrant = identifier of the rescue team completing the search."},
+    {"q":"In the search-assessment 'X', what does the BOTTOM quadrant denote?","o":["Team identifier","Time and date left","Personnel hazards","Number of live and dead victims"],"a":3,"d":"medium","e":"SOP 7-6: Bottom quadrant = number of live and dead victims (0 = none, L = live, D = deceased)."},
+    {"q":"In the hailing system, what does one long blast (three seconds) signal?","o":["Resume operations","Cease operations / all quiet to listen","Evacuate the area","Roll call"],"a":1,"d":"medium","e":"SOP 7-6: One long blast (3 seconds) = cease operations / all quiet so personnel can listen for victims."},
+    {"q":"In the hailing system, what do three short blasts (one second each) signal?","o":["All quiet","Resume operations","Evacuate the area","Victim located"],"a":2,"d":"medium","e":"SOP 7-6: Three short blasts (1 second each) = evacuate the area."},
+    {"q":"In the hailing system, what does one long blast plus one short blast signal?","o":["Evacuate","Cease operations","Resume operations","Mayday"],"a":2,"d":"medium","e":"SOP 7-6: One long and one short blast = resume operations."},
+    {"q":"When a buried victim is found alive after hours of work, you should NOT remove them unless what is imminent?","o":["Nightfall","Secondary collapse, fire, electrocution, or drowning","Rain","Shift change"],"a":1,"d":"medium","e":"SOP 7-6: Do not remove a long-buried live victim unless secondary collapse, fire, electrocution, or drowning is imminent."},
+    {"q":"Which collapse void pattern is formed when a bearing wall/column fails completely and an upper floor drops onto a lower floor?","o":["Lean-to","V-collapse","Pancake","A-frame"],"a":2,"d":"hard","e":"SOP 7-6: A pancake forms when the bearing wall(s) or column(s) fail completely and an upper floor drops onto a lower floor."},
+    {"q":"In an A-frame collapse, the highest survival rate for trapped victims is found where?","o":["At the exterior walls","Near interior partitioning","In the basement","On the roof"],"a":1,"d":"hard","e":"SOP 7-6: In an A-frame, the highest survival rate is near interior partitioning; other victims will be in debris near both exterior walls."},
+    {"q":"What is the capacity of a 6x6 crib built with three members per layer?","o":["48,000 lbs","60,000 lbs","135,000 lbs","24,000 lbs"],"a":2,"d":"hard","e":"SOP 7-6: 6x6 crib (3 per layer) = 135,000 lbs. (6x6 with 2 per layer = 60,000 lbs.)"},
+    {"q":"What is the capacity of a 4x4 crib built with two members per layer?","o":["12,000 lbs","24,000 lbs","48,000 lbs","60,000 lbs"],"a":1,"d":"hard","e":"SOP 7-6: 4x4 crib (2 per layer) = 24,000 lbs; (3 per layer) = 48,000 lbs."},
+    {"q":"As a rule of thumb, a crib box can be built how tall relative to its width?","o":["Equal to its width","Two times as high as wide","Three times as high as wide","Five times as high as wide"],"a":2,"d":"hard","e":"SOP 7-6: Rule of thumb: build the crib box up to three times as high as it is wide (e.g., 3' wide = 9' high)."},
+    {"q":"The maximum length of a shore should be no more than how many times its width?","o":["10 times","25 times","50 times","100 times"],"a":2,"d":"hard","e":"SOP 7-6: Keep shores as short as possible; max length should be no more than 50 times its width."},
+    {"q":"Which is the correct max height limitation for cribbing?","o":["4x4 max 6 ft, 6x6 max 4 ft","4x4 max 4 ft, 6x6 max 6 ft","Both max 8 ft","No height limit"],"a":1,"d":"hard","e":"SOP 7-6: 4x4 cribbing max height 4 ft; 6x6 cribbing max height 6 ft."},
+    {"q":"Which two FEMA US&R task forces are named for response in the Structural Collapse SOG?","o":["CA TF1 and NY TF1","FL TF1 (Metro) and FL TF2 (Miami)","TX TF1 and FL TF3","FL TF1 and GA TF1"],"a":1,"d":"hard","e":"SOP 7-6: The SOG names FL TF1 (Metro) and FL TF2 (Miami) as FEMA teams."},
+    {"q":"When forcing blindly through a wall, roof, or floor assembly, you should always utilize:","o":["A thermal imager only","Inspection holes","A search dog","Heavy machinery"],"a":1,"d":"hard","e":"SOP 7-6: Always utilize inspection holes when forcing blindly through a wall, roof, or floor assembly; avoid breaching columns, beams, and filled cells."},
+  ],
+  "shoring": [
+    { q:"What is the maximum design load for a T-Spot shore when the load is centered?", o:["2,000 lbs","4,000 lbs","8,000 lbs","16,000 lbs"], a:1, d:"easy", e:"FOG p.2-15: T-Spot design load is 4,000 lbs, valid only when the load is centered." },
+    { q:"What is the maximum height for a T-Spot shore?", o:["8 ft","11 ft","15 ft","20 ft"], a:1, d:"easy", e:"FOG p.2-15/2-16: maximum height is 11 ft." },
+    { q:"How many full gussets (12\"×12\") does a T-Spot shore use?", o:["1","2","3","4"], a:1, d:"easy", e:"A T-Spot shore uses 2 full gussets." },
+    { q:"Design load for a Double-T shore at 8 ft?", o:["10,000 lbs","16,000 lbs","20,000 lbs","24,000 lbs"], a:1, d:"medium", e:"FOG p.2-20: 16,000 lbs at 8 ft." },
+    { q:"Design load for a Double-T shore at 12 ft?", o:["7,000 lbs","10,000 lbs","16,000 lbs","20,000 lbs"], a:0, d:"hard", e:"FOG p.2-20/21: capacity drops to 7,000 lbs at 12 ft." },
+    { q:"A 2-post vertical shore with 6×6 posts carries what load at 12 ft?", o:["16,000 lbs","24,000 lbs","40,000 lbs","50,000 lbs"], a:2, d:"medium", e:"FOG p.2-27: 6×6 posts carry 40,000 lbs at 12 ft." },
+    { q:"What nails are specified for shoring braces?", o:["8d","12d","16d coated","20d"], a:2, d:"easy", e:"FOG p.2-12: 16d coated nails (0.148\"×3.25\")." },
+    { q:"Nail pattern for a 2×6 brace to a post?", o:["4-nail","6-nail","8-nail","10-nail"], a:2, d:"medium", e:"FOG p.2-13: 2×6 to post uses an 8-nail pattern." },
+    { q:"Full gusset dimensions?", o:["6×12\"","12×12\"","12×24\"","8×16\""], a:1, d:"easy", e:"FOG p.2-11: full gusset is 12×12\" plywood." },
+    { q:"Double gusset dimensions?", o:["6×12\"","12×12\"","12×24\"","8×16\""], a:2, d:"medium", e:"FOG p.2-11: double gusset is 12×24\" plywood." },
+  ]
+};
+
+/* =====================================================================
+   STORAGE LAYER  —  Supabase when configured, otherwise localStorage.
+   Both expose the same async functions so the app code doesn't change.
+   ===================================================================== */
+const USING_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON);
+let sb = null;
+if (USING_SUPABASE) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const LS_KEY = "trt_hub_v1";
+const LS_SESSION = "trt_hub_session";
+function lsGet() { return JSON.parse(localStorage.getItem(LS_KEY) || '{"users":[],"sessions":[],"questions":[]}'); }
+function lsSet(d) { localStorage.setItem(LS_KEY, JSON.stringify(d)); }
+
+const store = {
+  async signUp(email, password, name) {
+    if (USING_SUPABASE) {
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
+      if (error) throw new Error(error.message);
+      // profile row
+      if (data.user) await sb.from('profiles').upsert({ id: data.user.id, email, name });
+      return { id: data.user?.id, email, name };
+    }
+    const db = lsGet();
+    if (db.users.find(u => u.email === email)) throw new Error("That email is already registered — use Sign in instead.");
+    const user = { id: crypto.randomUUID(), email, password, name, answered: 0, correct: 0 };
+    db.users.push(user); lsSet(db);
+    localStorage.setItem(LS_SESSION, user.id);
+    return user;
+  },
+  async signIn(email, password) {
+    if (USING_SUPABASE) {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw new Error(error.message);
+      const { data: prof } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+      return prof || { id: data.user.id, email, name: email };
+    }
+    const db = lsGet();
+    const user = db.users.find(u => u.email === email && u.password === password);
+    if (!user) throw new Error("Email or password is incorrect.");
+    localStorage.setItem(LS_SESSION, user.id);
+    return user;
+  },
+  async signOut() {
+    localStorage.removeItem(LS_SESSION);
+    if (USING_SUPABASE) await sb.auth.signOut();
+  },
+  async currentUser() {
+    if (USING_SUPABASE) {
+      const { data } = await sb.auth.getUser();
+      if (!data.user) return null;
+      const { data: prof } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+      return prof || { id: data.user.id, email: data.user.email, name: data.user.email };
+    }
+    // local mode: restore the last signed-in user if one was saved
+    const savedId = localStorage.getItem(LS_SESSION);
+    if (!savedId) return null;
+    const u = lsGet().users.find(x => x.id === savedId);
+    return u || null;
+  },
+  async customQuestions() {
+    if (USING_SUPABASE) {
+      const { data, error } = await sb.from('questions').select('*').order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data.map(r => ({ id: r.id, topic: r.topic, q: r.question, o: r.options, a: r.correct, d: r.difficulty, e: r.explanation }));
+    }
+    return lsGet().questions;
+  },
+  async addQuestion(rec) {
+    if (USING_SUPABASE) {
+      const { error } = await sb.from('questions').insert({
+        topic: rec.topic, question: rec.q, options: rec.o, correct: rec.a,
+        difficulty: rec.d, explanation: rec.e, author_email: state.user.email
+      });
+      if (error) throw new Error(error.message);
+      return;
+    }
+    const db = lsGet(); rec.id = crypto.randomUUID(); db.questions.push(rec); lsSet(db);
+  },
+  async deleteQuestion(id) {
+    if (USING_SUPABASE) { await sb.from('questions').delete().eq('id', id); return; }
+    const db = lsGet(); db.questions = db.questions.filter(q => q.id !== id); lsSet(db);
+  },
+  async saveSession(rec) {
+    if (USING_SUPABASE) {
+      await sb.from('sessions').insert({ user_id: state.user.id, topic: rec.topic, score: rec.score, total: rec.total, correct: rec.correct, seconds: rec.seconds });
+      return;
+    }
+    const db = lsGet();
+    db.sessions.push({ ...rec, userId: state.user.id, date: new Date().toISOString() });
+    const u = db.users.find(x => x.id === state.user.id);
+    if (u) { u.answered = (u.answered||0)+rec.total; u.correct = (u.correct||0)+rec.correct; }
+    lsSet(db);
+  },
+  async mySessions() {
+    if (USING_SUPABASE) {
+      const { data } = await sb.from('sessions').select('*').eq('user_id', state.user.id).order('created_at', { ascending: false }).limit(8);
+      return (data||[]).map(r => ({ topic: r.topic, score: r.score, date: r.created_at }));
+    }
+    return lsGet().sessions.filter(s => s.userId === state.user.id).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+  },
+  async leaderboard() {
+    if (USING_SUPABASE) {
+      // a Postgres view 'leaderboard' is created in the SQL setup
+      const { data } = await sb.from('leaderboard').select('*').order('avg_score', { ascending: false }).limit(8);
+      return (data||[]).map(r => ({ name: r.name, avg: Math.round(r.avg_score) }));
+    }
+    const db = lsGet();
+    return db.users.map(u => {
+      const ss = db.sessions.filter(s => s.userId === u.id);
+      const avg = ss.length ? Math.round(ss.reduce((t,s)=>t+s.score,0)/ss.length) : 0;
+      return { name: u.name, avg };
+    }).filter(u => u.avg > 0).sort((a,b)=>b.avg-a.avg).slice(0,8);
+  },
+  async myStats() {
+    if (USING_SUPABASE) {
+      const { data } = await sb.from('sessions').select('total,correct,score').eq('user_id', state.user.id);
+      const answered = (data||[]).reduce((t,s)=>t+s.total,0);
+      const correct  = (data||[]).reduce((t,s)=>t+s.correct,0);
+      const sessions = (data||[]).length;
+      const avg = sessions ? Math.round((data.reduce((t,s)=>t+s.score,0))/sessions) : 0;
+      return { answered, avg, sessions };
+    }
+    const db = lsGet();
+    const u = db.users.find(x => x.id === state.user.id) || {};
+    const ss = db.sessions.filter(s => s.userId === state.user.id);
+    const avg = ss.length ? Math.round(ss.reduce((t,s)=>t+s.score,0)/ss.length) : 0;
+    return { answered: u.answered||0, avg, sessions: ss.length };
+  }
+};
+
+/* =====================================================================
+   APP STATE + HELPERS
+   ===================================================================== */
+const state = { user: null, selectedTopic: TOPICS[0].id, quiz: null, allCustom: [] };
+
+const $ = id => document.getElementById(id);
+function isAdmin(u) { return u && u.email === ADMIN_EMAIL; }
+function topicName(id) { const t = TOPICS.find(t=>t.id===id); return t ? t.name : id; }
+function note(elId, msg, kind) {
+  const el = $(elId); el.innerHTML = `<div class="note ${kind}">${msg}</div>`;
+  if (kind !== 'info') setTimeout(()=>{ el.innerHTML=''; }, 4000);
+}
+
+async function allQuestionsFor(topicId) {
+  const builtin = (BUILTIN[topicId] || []).map(x => ({ ...x, builtin: true }));
+  const custom = state.allCustom.filter(x => x.topic === topicId);
+  return builtin.concat(custom);
+}
+
+/* =====================================================================
+   AUTH UI
+   ===================================================================== */
+let authMode = "in";
+function toggleAuthMode() {
+  authMode = authMode === "in" ? "up" : "in";
+  const up = authMode === "up";
+  $('authTitle').textContent = up ? "Create your account" : "Sign in";
+  $('authSubtitle').textContent = up ? "Join your class and start tracking progress." : "Pick up where you left off.";
+  $('authBtn').textContent = up ? "Create account" : "Sign in";
+  $('nameField').classList.toggle('hidden', !up);
+  $('toggleText').textContent = up ? "Already registered? " : "New here? ";
+  $('toggleLink').textContent = up ? "Sign in" : "Create an account";
+}
+
+async function handleAuth() {
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  try {
+    if (authMode === "up") {
+      const name = $('name').value.trim();
+      if (!email || !password || !name) return note('authNote','Fill in every field to continue.','err');
+      state.user = await store.signUp(email, password, name);
+      if (USING_SUPABASE && !state.user.id) {
+        return note('authNote','Check your email to confirm your account, then sign in.','info');
+      }
+    } else {
+      if (!email || !password) return note('authNote','Enter your email and password.','err');
+      state.user = await store.signIn(email, password);
+    }
+    enterApp();
+  } catch (err) {
+    note('authNote', err.message, 'err');
+  }
+}
+
+async function logout() {
+  await store.signOut();
+  state.user = null;
+  $('app').classList.add('hidden');
+  $('authScreen').classList.remove('hidden');
+  $('email').value = ''; $('password').value = '';
+}
+
+/* =====================================================================
+   ENTER APP
+   ===================================================================== */
+async function enterApp() {
+  $('authScreen').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('whoName').textContent = state.user.name;
+
+  const admin = isAdmin(state.user);
+  $('whoRole').textContent = admin ? "Admin · Instructor" : "Student";
+  $('whoRole').classList.toggle('admin', admin);
+  $('tab-manage').classList.toggle('hidden', !admin);
+
+  const flag = $('backendFlag');
+  flag.textContent = USING_SUPABASE ? "shared" : "local";
+  flag.classList.toggle('live', USING_SUPABASE);
+
+  // populate topic dropdowns
+  const opts = TOPICS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  $('mTopic').innerHTML = opts;
+  $('filterTopic').innerHTML = `<option value="all">All topics</option>` + opts;
+
+  await refreshData();
+  go('study');
+}
+
+async function refreshData() {
+  try { state.allCustom = await store.customQuestions(); }
+  catch (e) { state.allCustom = []; }
+  await renderHome();
+}
+
+/* =====================================================================
+   NAV
+   ===================================================================== */
+function go(where) {
+  $('tab-study').classList.toggle('on', where !== 'manage');
+  $('tab-manage').classList.toggle('on', where === 'manage');
+
+  $('view-home').classList.toggle('hidden', where !== 'study');
+  $('view-quiz').classList.add('hidden');
+  $('view-results').classList.add('hidden');
+  $('view-manage').classList.toggle('hidden', where !== 'manage');
+
+  if (where === 'study') renderHome();
+  if (where === 'manage') renderManageList();
+}
+
+/* =====================================================================
+   HOME / DASHBOARD
+   ===================================================================== */
+async function renderHome() {
+  // topic cards
+  const grid = $('topicGrid');
+  const counts = {};
+  for (const t of TOPICS) {
+    const qs = await allQuestionsFor(t.id);
+    counts[t.id] = qs.length;
+  }
+  grid.innerHTML = TOPICS.map(t => `
+    <button class="topic ${state.selectedTopic===t.id?'sel':''}" onclick="pickTopic('${t.id}')">
+      <span class="t-count">${counts[t.id]}</span>
+      <div class="t-name">${t.name}</div>
+      <div class="t-meta">${t.blurb || 'Questions for this SOP'}</div>
+    </button>
+  `).join('');
+
+  // stats
+  const st = await store.myStats();
+  $('s-answered').textContent = st.answered;
+  $('s-avg').textContent = st.avg + '%';
+  $('s-sessions').textContent = st.sessions;
+  const totalBank = Object.values(counts).reduce((a,b)=>a+b,0);
+  $('s-bank').textContent = totalBank;
+
+  // recent
+  const recent = await store.mySessions();
+  $('recent').innerHTML = recent.length
+    ? recent.map(s=>`<div class="row"><span>${new Date(s.date).toLocaleDateString()} · ${topicName(s.topic)}</span><span class="score">${s.score}%</span></div>`).join('')
+    : `<div class="muted-note">No sessions yet — begin one above.</div>`;
+
+  // leaderboard
+  const board = await store.leaderboard();
+  $('board').innerHTML = board.length
+    ? board.map((u,i)=>`<div class="row"><span>${i+1}. ${u.name}</span><span class="score">${u.avg}%</span></div>`).join('')
+    : `<div class="muted-note">No scores yet.</div>`;
+}
+
+function pickTopic(id) {
+  state.selectedTopic = id;
+  document.querySelectorAll('.topic').forEach(el=>el.classList.remove('sel'));
+  event.currentTarget.classList.add('sel');
+}
+
+/* =====================================================================
+   QUIZ
+   ===================================================================== */
+let timer = null;
+async function startQuiz() {
+  const n = Math.min(parseInt($('numQ').value) || 10, 50);
+  const diff = $('diff').value;
+  let pool = await allQuestionsFor(state.selectedTopic);
+  if (diff !== 'all') pool = pool.filter(q => q.d === diff);
+  if (!pool.length) return note('studyNote', 'No questions match that topic and difficulty yet.', 'err');
+
+  pool = pool.sort(()=>Math.random()-0.5).slice(0, n);
+  state.quiz = { qs: pool, i: 0, picks: [], correct: 0, start: Date.now(), topic: state.selectedTopic };
+
+  $('view-home').classList.add('hidden');
+  $('view-quiz').classList.remove('hidden');
+  $('qTotal').textContent = pool.length;
+  $('qTopic').textContent = topicName(state.selectedTopic);
+
+  clearInterval(timer);
+  timer = setInterval(()=>{ $('qTime').textContent = Math.floor((Date.now()-state.quiz.start)/1000)+'s'; }, 1000);
+  renderQ();
+}
+
+function renderQ() {
+  const Q = state.quiz, q = Q.qs[Q.i];
+  $('qNow').textContent = Q.i + 1;
+  $('qText').textContent = q.q;
+  $('qOpts').innerHTML = q.o.map((o,idx)=>`<button class="opt" onclick="pickOpt(${idx})">${o}</button>`).join('');
+  $('qSubmit').disabled = true;
+  $('qSubmit').classList.remove('hidden');
+  $('qResult').classList.add('hidden');
+  $('qArea').classList.remove('hidden');
+  $('qBar').style.width = (Q.i / Q.qs.length * 100) + '%';
+}
+
+function pickOpt(idx) {
+  state.quiz.pick = idx;
+  document.querySelectorAll('#qOpts .opt').forEach((el,i)=>el.classList.toggle('sel', i===idx));
+  $('qSubmit').disabled = false;
+}
+
+function submitAnswer() {
+  const Q = state.quiz, q = Q.qs[Q.i], pick = Q.pick;
+  const right = pick === q.a;
+  if (right) Q.correct++;
+  Q.picks.push(pick);
+
+  document.querySelectorAll('#qOpts .opt').forEach((el,i)=>{
+    el.disabled = true;
+    if (i === q.a) el.classList.add('right');
+    if (i === pick && !right) el.classList.add('wrong');
+  });
+
+  $('qExplain').innerHTML =
+    `<div class="explain ${right?'right':'wrong'}">
+       <div class="verdict ${right?'right':'wrong'}">${right?'Correct':'Not quite'}</div>
+       ${q.e}
+     </div>`;
+  $('qSubmit').classList.add('hidden');
+  $('qResult').classList.remove('hidden');
+  $('qNext').textContent = (Q.i + 1 >= Q.qs.length) ? 'See results' : 'Next';
+}
+
+function nextQ() {
+  const Q = state.quiz;
+  Q.i++;
+  if (Q.i >= Q.qs.length) finishQuiz();
+  else renderQ();
+}
+
+async function finishQuiz() {
+  clearInterval(timer);
+  const Q = state.quiz;
+  const total = Q.qs.length;
+  const score = Math.round(Q.correct / total * 100);
+  const seconds = Math.floor((Date.now() - Q.start) / 1000);
+
+  await store.saveSession({ topic: Q.topic, score, total, correct: Q.correct, seconds });
+
+  $('view-quiz').classList.add('hidden');
+  $('view-results').classList.remove('hidden');
+  $('ring').style.setProperty('--p', score);
+  $('ringPct').textContent = score + '%';
+  $('resultMsg').textContent = score >= 80 ? 'Strong work.' : score >= 60 ? 'Solid — keep going.' : 'Worth another pass.';
+  $('r-total').textContent = total;
+  $('r-correct').textContent = Q.correct;
+  $('r-time').textContent = Math.floor(seconds/60)+'m '+(seconds%60)+'s';
+  $('r-score').textContent = score + '%';
+}
+
+/* =====================================================================
+   MANAGE (admin)
+   ===================================================================== */
+async function addQuestion() {
+  if (!isAdmin(state.user)) return;
+  const rec = {
+    topic: $('mTopic').value,
+    q: $('mQ').value.trim(),
+    o: [$('mO0').value.trim(), $('mO1').value.trim(), $('mO2').value.trim(), $('mO3').value.trim()],
+    a: parseInt($('mCorrect').value),
+    d: $('mDiff').value,
+    e: $('mExplain').value.trim(),
+  };
+  if (!rec.q || rec.o.some(x=>!x) || !rec.e) return note('manageNote','Fill in the question, all four options, and the explanation.','err');
+
+  try {
+    await store.addQuestion(rec);
+    note('manageNote','Question added to the bank.','ok');
+    $('mQ').value=''; ['mO0','mO1','mO2','mO3','mExplain'].forEach(id=>$(id).value='');
+    state.allCustom = await store.customQuestions();
+    renderManageList();
+  } catch (err) {
+    note('manageNote', err.message, 'err');
+  }
+}
+
+function renderManageList() {
+  const filter = $('filterTopic').value;
+  const list = filter === 'all' ? state.allCustom : state.allCustom.filter(q=>q.topic===filter);
+  $('manageList').innerHTML = list.length
+    ? list.map(q=>`
+        <div class="qitem">
+          <div class="top">
+            <div class="qq">${q.q}</div>
+            <span class="pill ${q.d}">${q.d}</span>
+          </div>
+          <div class="opts-line">${topicName(q.topic)} · ${q.o.map((o,i)=>i===q.a?`<span class="ok">${o} ✓</span>`:o).join(' · ')}</div>
+          <button class="btn-bad" style="padding:5px 11px;font-size:12px;" onclick="removeQuestion('${q.id}')">Delete</button>
+        </div>`).join('')
+    : `<div class="muted-note">No custom questions${filter==='all'?'':' for this topic'} yet.</div>`;
+}
+
+async function removeQuestion(id) {
+  await store.deleteQuestion(id);
+  state.allCustom = await store.customQuestions();
+  renderManageList();
+  renderHome();
+}
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+(async function boot() {
+  const u = await store.currentUser();
+  if (u) { state.user = u; enterApp(); return; }
+  // otherwise the auth screen is already showing
+})();
+</script>
+</body>
+</html>
