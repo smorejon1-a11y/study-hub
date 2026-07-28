@@ -193,6 +193,25 @@ button:active { transform: translateY(1px); }
 .opt.wrong { border-color: var(--bad); background: var(--bad-dim); }
 .opt:disabled { cursor: default; }
 
+/* fill-in-the-blank */
+.fib-input {
+  width: 100%; padding: 13px 15px; font-size: 15px;
+  background: var(--panel-2); border: 1.5px solid var(--line);
+  border-radius: var(--radius); color: var(--text); font-family: inherit;
+}
+.fib-input:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px var(--signal-dim); }
+.fib-input:disabled { opacity: 0.8; }
+.fib-input.right { border-color: var(--go); background: var(--go-dim); }
+.fib-input.wrong { border-color: var(--bad); background: var(--bad-dim); }
+.fib-answer { margin-top: 10px; font-size: 13px; color: var(--muted); }
+.fib-answer b { color: var(--go); }
+.qtype-tag {
+  display: inline-block; font-size: 10.5px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 20px;
+  padding: 2px 9px; margin-bottom: 12px;
+}
+
 .explain { margin-top: 16px; padding: 14px; background: var(--panel-2); border-left: 3px solid var(--line); border-radius: 8px; font-size: 13.5px; line-height: 1.5; color: #c4cfe0; }
 .explain.right { border-left-color: var(--go); }
 .explain.wrong { border-left-color: var(--bad); }
@@ -467,6 +486,12 @@ const BUILTIN = {
     {"q":"During size-up, crews must determine the danger of fire travel specifically in:","o":["Adjacent buildings","Confined spaces","Vehicles","Open areas"],"a":1,"d":"hard","e":"SOP 7-1: Determine the nature/extent of damage, mechanisms of entrapment, and danger of fire travel in confined spaces."},
     {"q":"At the close of Phase I, the first arriving unit should:","o":["Begin patient removal","Await the TRT and assist in initiating Phase 2","Terminate the incident","Demobilize hose lines"],"a":1,"d":"hard","e":"SOP 7-1: Phase I ends by awaiting TRT and assisting in initiating Phase 2, per the specific rescue SOG."},
     {"q":"A vehicle/machinery rescue also applies when the victim is confined and unable to self-extricate even though they:","o":["Are uninjured","Can move within the compartment","Refuse help","Have called 911"],"a":1,"d":"hard","e":"SOP 7-1: It applies where the victim is unable to self-extricate due to damage/obstruction despite being able to move within the compartment."},
+    {"t":"tf","q":"There are five rescue conditions that trigger a Technical Rescue Team assignment.","a":0,"d":"easy","e":"True. SOP 7-1: rope, confined space, trench/excavation, structural collapse, and vehicle/machinery."},
+    {"t":"tf","q":"Hazardous materials spills are one of the TRT activation conditions.","a":1,"d":"medium","e":"False. Hazmat is not a TRT activation condition; the five are rope, confined space, trench, structural collapse, and vehicle/machinery."},
+    {"t":"tf","q":"First-due engine companies should stretch hose lines in case of potential fire or explosion.","a":0,"d":"easy","e":"True. SOP 7-1: hose lines are stretched as a precaution against fire or explosion."},
+    {"t":"fib","q":"An excavation or trench is defined as an emergency at a depth of at least ____ feet.","ans":["4","four"],"d":"easy","e":"SOP 7-1: four feet or deeper, or any excavation deeper than it is wide."},
+    {"t":"fib","q":"For a building collapse, the safety zone is set at ____ times the height of the structure.","ans":["2.5","2 1/2","two and a half","2½"],"d":"medium","e":"SOP 7-1: 2½ times the height of the structure."},
+    {"t":"fib","q":"Trench apparatus should remain at least ____ feet from the location of the trench failure.","ans":["50","fifty"],"d":"medium","e":"SOP 7-1: at least 50 feet from the trench failure."},
   ],
   "sop-extrication": [
     {"q":"What is the purpose of SOP 7-2?","o":["To define rope angles","To standardize the department's response to vehicle extrication","To set hazmat limits","To outline trench shoring"],"a":1,"d":"easy","e":"SOP 7-2: It standardizes CGFD's response and handling of any vehicle extrication."},
@@ -494,6 +519,11 @@ const BUILTIN = {
     {"q":"Some vehicle types (e.g., EVs) may require what change to the standard hose line setup?","o":["No charged line at all","Additional hose lines","A booster reel only","Foam only"],"a":1,"d":"hard","e":"SOP 7-2: A minimum 1¾\" charged line is required, but additional hose lines may be needed depending on vehicle type (e.g., EVs)."},
     {"q":"After the patient is removed and prepared, the operation should:","o":["Leave equipment in place for investigators","Secure any equipment used and secure the scene","Demobilize immediately","Reopen the road first"],"a":1,"d":"hard","e":"SOP 7-2: The final steps are to prepare the patient for transport, secure equipment, and secure the scene."},
     {"q":"Command procedures must include establishment, transfer, and development of:","o":["A water supply","ICS organization","A landing zone","A press pool"],"a":1,"d":"hard","e":"SOP 7-2: Command procedures must include establishment, transfer, and development of the ICS organization."},
+    {"t":"tf","q":"The primary concern in any vehicle entrapment is safety to life.","a":0,"d":"easy","e":"True. SOP 7-2: safety to life is always the primary concern."},
+    {"t":"tf","q":"Personnel outside the action circle may wear reflective traffic vests instead of full protective gear.","a":0,"d":"medium","e":"True. SOP 7-2: those outside the action circle wear issued reflective traffic vests."},
+    {"t":"tf","q":"Ultimate responsibility at a vehicle extrication scene lies with the Medical Group Leader.","a":1,"d":"medium","e":"False. Ultimate responsibility lies with the Incident Commander."},
+    {"t":"fib","q":"The action circle at a vehicle extrication is approximately ____ feet in circumference.","ans":["25","twenty-five","twenty five"],"d":"easy","e":"SOP 7-2: approximately 25 feet in circumference."},
+    {"t":"fib","q":"At minimum, a ____ inch charged hose line must be staffed at all times during extrication.","ans":["1.75","1 3/4","1¾","1 3/4 inch"],"d":"medium","e":"SOP 7-2: a minimum 1¾\" line, charged and staffed at all times."},
   ],
   "sop-rope": [
     {"q":"A non-technical evacuation is generally one with terrain less than what angle?","o":["30 degrees","40 degrees","50 degrees","60 degrees"],"a":1,"d":"easy","e":"SOP 7-3: Non-technical evacuations are generally less than 40 degrees inclination."},
@@ -521,6 +551,12 @@ const BUILTIN = {
     {"q":"During a high-angle stokes evacuation, what line setup is required?","o":["One combined line","A separate raising/lowering line and a belay line","Belay only","Main line only"],"a":1,"d":"hard","e":"SOP 7-3: A separate raising/lowering line and a separate belay line shall be set up for steep-angle evacuations."},
     {"q":"The TRT Group Leader should always have what in case the first plan fails?","o":["A second crane","An alternative Action Plan communicated to all in the rescue area","A spare stokes","Extra rope only"],"a":1,"d":"hard","e":"SOP 7-3: The TRT Group Leader should have an alternate Action Plan communicated to all personnel in the rescue area."},
     {"q":"For a crane evacuation, what must be established on the ground before lifting?","o":["A media zone","A stokes basket landing area","A decon line","A rehab tent"],"a":1,"d":"hard","e":"SOP 7-3: A stokes basket landing area shall be established, with communications between the TRT leader, crane operator liaison, and ground crew."},
+    {"t":"tf","q":"Double rope technique shall be used in all rope rescue evacuations.","a":0,"d":"easy","e":"True. SOP 7-3: in any case, double rope technique shall be used."},
+    {"t":"tf","q":"Rescue operations should be conducted from high risk to low risk.","a":1,"d":"medium","e":"False. SOP 7-3: operations are conducted from low risk to high risk."},
+    {"t":"tf","q":"Crane operations for evacuation are considered a low-risk operation.","a":1,"d":"medium","e":"False. SOP 7-3: crane operations are high-risk operations."},
+    {"t":"fib","q":"A non-technical evacuation generally involves terrain less than ____ degrees.","ans":["40","forty"],"d":"easy","e":"SOP 7-3: non-technical evacuations are generally less than 40 degrees."},
+    {"t":"fib","q":"Evacuations greater than ____ degrees are high-angle operations conducted by the TRT.","ans":["60","sixty"],"d":"medium","e":"SOP 7-3: evacuations greater than 60 degrees are high-angle operations."},
+    {"t":"fib","q":"The Rope Rescue SOG references NFPA standard ____.","ans":["1670"],"d":"hard","e":"SOP 7-3: the Rope Rescue SOG references NFPA 1670."},
   ],
   "sop-confined": [
     {"q":"Confined spaces are NOT intended for what?","o":["Storage","Continual employee occupancy","Ventilation","Atmospheric monitoring"],"a":1,"d":"easy","e":"SOP 7-4: Confined spaces are areas not intended for continual employee occupancy with limited egress."},
@@ -548,6 +584,12 @@ const BUILTIN = {
     {"q":"When attempting to reach the patient, what type of approach is recommended if their location is known or suspected?","o":["A single-point approach","A two-prong attack","Aerial recon","Remote camera only"],"a":1,"d":"hard","e":"SOP 7-4: If possible, attempt a two-prong attack to reach the patient when their location is known or suspected."},
     {"q":"When moving a patient through the only egress opening, team members should be positioned where?","o":["Behind the patient","On the egress side of the opening, to avoid being blocked in","Outside the space","Both sides equally"],"a":1,"d":"hard","e":"SOP 7-4: Whenever possible, station all team members on the egress side so they are not blocked in if the patient becomes lodged."},
     {"q":"A \"Competent Person\" is defined as one who can identify hazardous conditions AND has authorization to:","o":["Enter any space","Take prompt corrective measures to eliminate those conditions","Override the IC","Sign the entry permit only"],"a":1,"d":"hard","e":"SOP 7-4: A Competent Person can identify existing/predictable hazardous conditions and has authorization to take prompt corrective measures to eliminate them."},
+    {"t":"tf","q":"You may enter a confined space alone if the atmosphere has been tested.","a":1,"d":"easy","e":"False. SOP 7-4: never enter alone; always in teams of two minimum."},
+    {"t":"tf","q":"Electric winches are the preferred method for removing patients from a confined space.","a":1,"d":"medium","e":"False. Electric winches allow little control and could cause dismemberment; mechanical advantage or manual winches are preferred."},
+    {"t":"tf","q":"If you must remove your standard SCBA to fit through an opening, you should not enter.","a":0,"d":"easy","e":"True. SOP 7-4: if you must remove your standard SCBA to fit, Do Not Enter."},
+    {"t":"fib","q":"An atmosphere is oxygen deficient (IDLH) below ____ percent oxygen.","ans":["19.5","19.5 percent"],"d":"easy","e":"SOP 7-4: oxygen deficient is below 19.5%."},
+    {"t":"fib","q":"Entry teams are limited to ____ minutes in any confined space.","ans":["20","twenty"],"d":"medium","e":"SOP 7-4: teams are limited to twenty minutes."},
+    {"t":"fib","q":"Flammability is considered IDLH at ____ percent of the Lower Explosive Limit.","ans":["10","ten"],"d":"hard","e":"SOP 7-4: flammability at 10% of the LEL is IDLH."},
   ],
   "sop-trench": [
     {"q":"By definition, the width of a trench is no greater than how many feet?","o":["10 feet","15 feet","20 feet","25 feet"],"a":1,"d":"easy","e":"SOP 7-5: A trench's width is no greater than 15 feet; generally the depth is greater than the width."},
@@ -575,6 +617,12 @@ const BUILTIN = {
     {"q":"During termination, equipment should be removed in what manner?","o":["All at once","In reverse order, using the minimum number of rescuers","Left in place permanently","By heavy machinery"],"a":1,"d":"hard","e":"SOP 7-5: Remove all equipment in reverse order, sometimes leaving it for OSHA/Police; use the minimum number of rescuers."},
     {"q":"Which three NFPA standards are referenced by the Trench Rescue SOG?","o":["1500, 1561, 1670","1001, 1002, 1006","472, 473, 1072","1710, 1720, 1851"],"a":0,"d":"hard","e":"SOP 7-5: References are NFPA 1500, NFPA 1561, and NFPA 1670."},
     {"q":"Under no circumstances shall personnel enter an unprotected trench unless what is in place?","o":["A supervisor's verbal approval","Hazard assessment, atmospheric monitoring, and protective systems","Daylight conditions","A standby ambulance"],"a":1,"d":"hard","e":"SOP 7-5: No entry into an unprotected trench unless hazard assessment, atmospheric monitoring, and protective systems are in place — any deviation requires a documented risk/benefit analysis authorized by the IC."},
+    {"t":"tf","q":"Heavy equipment at a trench scene should be left running in case it is needed.","a":1,"d":"easy","e":"False. SOP 7-5: order all heavy equipment turned off."},
+    {"t":"tf","q":"Any person found in a trench during assessment should be ordered out immediately.","a":0,"d":"easy","e":"True. SOP 7-5: order any persons in the trench out immediately."},
+    {"t":"tf","q":"Debris near a trench victim should be removed quickly with a shovel.","a":1,"d":"medium","e":"False. Debris near a victim is removed by hand or small trowel — recognizing a body in soil is difficult."},
+    {"t":"fib","q":"A trench's width is defined as no greater than ____ feet.","ans":["15","fifteen"],"d":"easy","e":"SOP 7-5: a trench's width is no greater than 15 feet."},
+    {"t":"fib","q":"Ladders in the excavation must extend ____ feet above the lip of the trench.","ans":["3","three"],"d":"medium","e":"SOP 7-5: ladders must be 3 feet above the lip."},
+    {"t":"fib","q":"A trench safety analysis must be performed at least every ____ minutes.","ans":["30","thirty"],"d":"medium","e":"SOP 7-5: perform a safety analysis every 30 minutes."},
   ],
   "sop-collapse": [
     {"q":"What is the recommended safety zone for a structural collapse?","o":["Equal to the building height","1½ times the height","Two times the height of the building","2½ times the height"],"a":2,"d":"easy","e":"SOP 7-6: Establish a safety zone two times the height of the building."},
@@ -602,6 +650,12 @@ const BUILTIN = {
     {"q":"Which is the correct max height limitation for cribbing?","o":["4x4 max 6 ft, 6x6 max 4 ft","4x4 max 4 ft, 6x6 max 6 ft","Both max 8 ft","No height limit"],"a":1,"d":"hard","e":"SOP 7-6: 4x4 cribbing max height 4 ft; 6x6 cribbing max height 6 ft."},
     {"q":"Which two FEMA US&R task forces are named for response in the Structural Collapse SOG?","o":["CA TF1 and NY TF1","FL TF1 (Metro) and FL TF2 (Miami)","TX TF1 and FL TF3","FL TF1 and GA TF1"],"a":1,"d":"hard","e":"SOP 7-6: The SOG names FL TF1 (Metro) and FL TF2 (Miami) as FEMA teams."},
     {"q":"When forcing blindly through a wall, roof, or floor assembly, you should always utilize:","o":["A thermal imager only","Inspection holes","A search dog","Heavy machinery"],"a":1,"d":"hard","e":"SOP 7-6: Always utilize inspection holes when forcing blindly through a wall, roof, or floor assembly; avoid breaching columns, beams, and filled cells."},
+    {"t":"tf","q":"Only orange spray paint is used for the structure/hazard marking system.","a":0,"d":"easy","e":"True. SOP 7-6: aerosol cans of orange spray paint only."},
+    {"t":"tf","q":"Roughly 50% of people rescued from collapsed structures are surface victims.","a":0,"d":"medium","e":"True. SOP 7-6: about 50% are surface victims."},
+    {"t":"tf","q":"Three short blasts of the hailing signal means resume operations.","a":1,"d":"medium","e":"False. Three short blasts = evacuate the area. One long plus one short = resume."},
+    {"t":"fib","q":"The structural collapse safety zone is set at ____ times the height of the building.","ans":["2","two"],"d":"easy","e":"SOP 7-6: safety zone is two times the height."},
+    {"t":"fib","q":"A crib box can be built up to ____ times as high as it is wide.","ans":["3","three"],"d":"hard","e":"SOP 7-6: rule of thumb — up to three times as high as wide."},
+    {"t":"fib","q":"One long blast of the hailing system lasting ____ seconds signals all quiet.","ans":["3","three"],"d":"medium","e":"SOP 7-6: one long blast (3 seconds) = cease operations / all quiet."},
   ],
   "shoring": [
     {"q":"What is the maximum design load for a T-Spot shore when the load is centered?","o":["2,000 lbs","4,000 lbs","8,000 lbs","16,000 lbs"],"a":1,"d":"easy","e":"FOG: T-Spot design load is 4,000 lbs, valid ONLY when the load is centered."},
@@ -636,6 +690,12 @@ const BUILTIN = {
     {"q":"Which shoring system would you choose for a centered load of about 4,000 lbs?","o":["2-Post vertical","Double-T","T-Spot","None of these"],"a":2,"d":"medium","e":"FOG: The T-Spot is rated for 4,000 lbs centered and is the simplest, quickest option."},
     {"q":"Which two systems share the same load ratings of 16,000 / 10,000 / 7,000 lbs at 8 / 10 / 12 feet?","o":["T-Spot and Double-T","Double-T and 2-Post vertical","T-Spot and 2-Post vertical","All three are equal"],"a":1,"d":"hard","e":"FOG: The Double-T and the 2-Post vertical shore share the same 16,000/10,000/7,000 lb ratings at 8/10/12 ft."},
     {"q":"Going from a single T-Spot to a Double-T shore changes the load capacity by roughly:","o":["no change","doubling it","quadrupling it","halving it"],"a":2,"d":"hard","e":"FOG: The Double-T carries roughly four times the load of a single T-Spot (16,000 vs 4,000 lbs)."},
+    {"t":"tf","q":"The T-Spot shore's 4,000 lb rating only applies when the load is centered.","a":0,"d":"easy","e":"True. FOG: the 4,000 lb rating is valid only for a centered load."},
+    {"t":"tf","q":"A Double-T shore uses a single vertical post.","a":1,"d":"easy","e":"False. The Double-T uses two vertical posts."},
+    {"t":"tf","q":"Wedges in a shoring system are always used in pairs.","a":0,"d":"medium","e":"True. FOG: wedges are used in pairs (the diagonal symbol represents two stacked wedges)."},
+    {"t":"fib","q":"The maximum height for a T-Spot shore is ____ feet.","ans":["11","eleven"],"d":"easy","e":"FOG: T-Spot maximum height is 11 feet."},
+    {"t":"fib","q":"A full gusset measures 12 by ____ inches.","ans":["12","twelve"],"d":"medium","e":"FOG: a full gusset is 12×12 inches."},
+    {"t":"fib","q":"Shoring braces are fastened with ____ coated nails.","ans":["16d","16 penny","16-penny","16d nails"],"d":"hard","e":"FOG: 16d coated nails (0.148\"×3.25\")."},
   ]
 };
 
@@ -1005,11 +1065,73 @@ async function startQuiz() {
   renderQ();
 }
 
+/* Question types:
+   - "mc"  (or no type): multiple choice. Uses q.o (options) and q.a (index).
+   - "tf" : true/false. q.a = 0 for True, 1 for False. Options auto-generated.
+   - "fib": fill in the blank. q.ans = array of acceptable answers (strings).
+            Grading is forgiving (see fibMatches).                          */
+
+function qType(q) { return q.t || 'mc'; }
+
+function typeLabel(t) {
+  return t === 'tf' ? 'True / False' : t === 'fib' ? 'Fill in the blank' : 'Multiple choice';
+}
+
+// Forgiving comparison for fill-in-the-blank answers.
+function normalizeAns(s) {
+  return String(s)
+    .toLowerCase()
+    .trim()
+    .replace(/["'.,;:!?()]/g, '')      // drop punctuation
+    .replace(/\b(feet|foot|ft|inches|inch|in|pounds|lbs|lb)\b/g, '') // unit words
+    .replace(/[-\s]+/g, ' ')           // collapse spaces/hyphens
+    .trim();
+}
+
+function fibMatches(entered, acceptable) {
+  const e = normalizeAns(entered);
+  if (!e) return false;
+  return acceptable.some(a => {
+    const n = normalizeAns(a);
+    if (!n) return false;
+    // exact after normalization, or one contains the other (handles "16d" vs "16d nail")
+    return e === n || e.includes(n) || n.includes(e);
+  });
+}
+
 function renderQ() {
   const Q = state.quiz, q = Q.qs[Q.i];
+  const t = qType(q);
+  Q.pick = undefined;
+  Q.fibValue = '';
+
   $('qNow').textContent = Q.i + 1;
-  $('qText').textContent = q.q;
-  $('qOpts').innerHTML = q.o.map((o,idx)=>`<button class="opt" onclick="pickOpt(${idx})">${o}</button>`).join('');
+  $('qText').innerHTML = `<span class="qtype-tag">${typeLabel(t)}</span><br>${q.q}`;
+
+  const opts = $('qOpts');
+  if (t === 'fib') {
+    opts.innerHTML = `<input class="fib-input" id="fibInput" type="text"
+      placeholder="Type your answer…" autocomplete="off"
+      onkeydown="if(event.key==='Enter'&&!$('qSubmit').disabled)submitAnswer()"
+      oninput="onFibInput(this.value)">`;
+    setTimeout(()=>{ const el=$('fibInput'); if(el) el.focus(); }, 50);
+  } else {
+    // mc or tf — tf builds its own two options
+    const options = t === 'tf' ? ['True', 'False'] : q.o;
+    // Shuffle display order each time so the correct answer doesn't sit
+    // in the same position every question (source data is skewed toward B).
+    const order = options.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    Q.order = order;                         // displayed position -> original index
+    Q.correctPos = order.indexOf(q.a);        // where the correct answer now sits
+    opts.innerHTML = order.map((origIdx, pos) =>
+      `<button class="opt" onclick="pickOpt(${pos})">${options[origIdx]}</button>`
+    ).join('');
+  }
+
   $('qSubmit').disabled = true;
   $('qSubmit').classList.remove('hidden');
   $('qResult').classList.add('hidden');
@@ -1023,17 +1145,37 @@ function pickOpt(idx) {
   $('qSubmit').disabled = false;
 }
 
-function submitAnswer() {
-  const Q = state.quiz, q = Q.qs[Q.i], pick = Q.pick;
-  const right = pick === q.a;
-  if (right) Q.correct++;
-  Q.picks.push(pick);
+function onFibInput(val) {
+  state.quiz.fibValue = val;
+  $('qSubmit').disabled = (val.trim() === '');
+}
 
-  document.querySelectorAll('#qOpts .opt').forEach((el,i)=>{
-    el.disabled = true;
-    if (i === q.a) el.classList.add('right');
-    if (i === pick && !right) el.classList.add('wrong');
-  });
+function submitAnswer() {
+  const Q = state.quiz, q = Q.qs[Q.i], t = qType(q);
+  let right;
+
+  if (t === 'fib') {
+    right = fibMatches(Q.fibValue, q.ans);
+    const input = $('fibInput');
+    if (input) {
+      input.disabled = true;
+      input.classList.add(right ? 'right' : 'wrong');
+    }
+    // show the accepted answer under the box
+    const shown = q.ans[0];
+    $('qOpts').insertAdjacentHTML('beforeend',
+      `<div class="fib-answer">Accepted answer: <b>${shown}</b></div>`);
+  } else {
+    const pick = Q.pick;
+    right = pick === Q.correctPos;
+    document.querySelectorAll('#qOpts .opt').forEach((el,i)=>{
+      el.disabled = true;
+      if (i === Q.correctPos) el.classList.add('right');
+      if (i === pick && !right) el.classList.add('wrong');
+    });
+  }
+
+  if (right) Q.correct++;
 
   $('qExplain').innerHTML =
     `<div class="explain ${right?'right':'wrong'}">
