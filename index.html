@@ -244,48 +244,35 @@ button:active { transform: translateY(1px); }
 <body>
 
 <!-- ============ AUTH ============ -->
-<div class="auth-screen" id="authScreen">
+<!-- ============ ADMIN PASSCODE DIALOG (hidden until opened) ============ -->
+<div class="auth-screen hidden" id="adminDialog">
   <div class="auth-card">
     <div class="brand-mark">Coral Gables Fire · Station 2</div>
-    <h1 id="authTitle">Sign in</h1>
-    <div class="subtitle" id="authSubtitle">Pick up where you left off.</div>
+    <h1>Instructor access</h1>
+    <div class="subtitle">Enter the passcode to manage questions.</div>
 
     <div id="authNote"></div>
 
     <div class="field">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <div class="field hidden" id="nameField">
-      <label for="name">Full name</label>
-      <input type="text" id="name" placeholder="First Last">
+      <label for="passcode">Passcode</label>
+      <input type="password" id="passcode" placeholder="••••••••" autocomplete="off">
     </div>
 
-    <button class="btn-go" onclick="handleAuth()" id="authBtn">Sign in</button>
-
+    <button class="btn-go" onclick="tryAdmin()">Unlock</button>
     <div class="toggle-auth">
-      <span id="toggleText">New here? </span>
-      <a onclick="toggleAuthMode()" id="toggleLink">Create an account</a>
+      <a onclick="closeAdmin()">Cancel</a>
     </div>
   </div>
 </div>
 
 <!-- ============ APP ============ -->
-<div id="app" class="hidden">
+<div id="app">
   <div class="topbar">
     <div class="wrap topbar-in">
       <div class="logo"><span class="tick"></span> CGFD Station 2 · Study Hub</div>
       <div class="who">
-        <span class="backend-flag" id="backendFlag">local</span>
-        <div>
-          <div class="name" id="whoName">—</div>
-          <div class="role" id="whoRole">Student</div>
-        </div>
-        <button class="btn-quiet" style="padding:8px 12px;font-size:12px;" onclick="logout()">Sign out</button>
+        <button class="btn-quiet" id="adminBtn" style="padding:8px 12px;font-size:12px;" onclick="openAdmin()">Instructor</button>
+        <button class="btn-quiet hidden" id="lockBtn" style="padding:8px 12px;font-size:12px;" onclick="lockAdmin()">Lock</button>
       </div>
     </div>
   </div>
@@ -299,10 +286,8 @@ button:active { transform: translateY(1px); }
     <!-- ====== STUDY: HOME ====== -->
     <div id="view-home">
       <div class="stat-row">
-        <div class="stat"><div class="v" id="s-answered">0</div><div class="l">Answered</div></div>
-        <div class="stat"><div class="v accent" id="s-avg">0%</div><div class="l">Avg score</div></div>
-        <div class="stat"><div class="v" id="s-sessions">0</div><div class="l">Sessions</div></div>
-        <div class="stat"><div class="v" id="s-bank">0</div><div class="l">In bank</div></div>
+        <div class="stat"><div class="v accent" id="s-bank">0</div><div class="l">Questions in bank</div></div>
+        <div class="stat"><div class="v" id="s-topics">0</div><div class="l">Topics</div></div>
       </div>
 
       <div class="card">
@@ -333,19 +318,6 @@ button:active { transform: translateY(1px); }
             </select>
           </div>
           <button class="btn-go" style="flex:0 0 auto;padding:11px 22px;" onclick="startQuiz()">Begin</button>
-        </div>
-      </div>
-
-      <div class="split">
-        <div class="card" style="margin:0;">
-          <h2>Recent sessions</h2>
-          <div class="lead">Your last few runs.</div>
-          <div id="recent"></div>
-        </div>
-        <div class="card" style="margin:0;">
-          <h2>Leaderboard</h2>
-          <div class="lead">Top average across the class.</div>
-          <div id="board"></div>
         </div>
       </div>
     </div>
@@ -671,9 +643,17 @@ const BUILTIN = {
    STORAGE LAYER  —  Supabase when configured, otherwise localStorage.
    Both expose the same async functions so the app code doesn't change.
    ===================================================================== */
-const USING_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON);
+let USING_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON);
 let sb = null;
-if (USING_SUPABASE) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+if (USING_SUPABASE) {
+  try {
+    if (typeof supabase === 'undefined') throw new Error('Supabase library did not load');
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  } catch (e) {
+    console.warn('Supabase unavailable, falling back to local mode:', e.message);
+    USING_SUPABASE = false;
+  }
+}
 
 const LS_KEY = "trt_hub_v1";
 const LS_SESSION = "trt_hub_session";
@@ -738,7 +718,7 @@ const store = {
     if (USING_SUPABASE) {
       const { error } = await sb.from('questions').insert({
         topic: rec.topic, question: rec.q, options: rec.o, correct: rec.a,
-        difficulty: rec.d, explanation: rec.e, author_email: state.user.email
+        difficulty: rec.d, explanation: rec.e, author_email: ADMIN_EMAIL
       });
       if (error) throw new Error(error.message);
       return;
@@ -800,7 +780,7 @@ const store = {
 /* =====================================================================
    APP STATE + HELPERS
    ===================================================================== */
-const state = { user: null, selectedTopics: [TOPICS[0].id], quiz: null, allCustom: [] };
+const state = { isAdmin: false, selectedTopics: [TOPICS[0].id], quiz: null, allCustom: [] };
 
 const $ = id => document.getElementById(id);
 function isAdmin(u) { return u && u.email === ADMIN_EMAIL; }
@@ -817,67 +797,47 @@ async function allQuestionsFor(topicId) {
 }
 
 /* =====================================================================
-   AUTH UI
+   ADMIN PASSCODE  —  practical lock for the Manage tab.
+   Change ADMIN_PASSCODE to whatever you like.
+   The real backstop is the Supabase rule, which only lets the admin
+   identity write questions; this just hides the UI from students.
    ===================================================================== */
-let authMode = "in";
-function toggleAuthMode() {
-  authMode = authMode === "in" ? "up" : "in";
-  const up = authMode === "up";
-  $('authTitle').textContent = up ? "Create your account" : "Sign in";
-  $('authSubtitle').textContent = up ? "Join your class and start tracking progress." : "Pick up where you left off.";
-  $('authBtn').textContent = up ? "Create account" : "Sign in";
-  $('nameField').classList.toggle('hidden', !up);
-  $('toggleText').textContent = up ? "Already registered? " : "New here? ";
-  $('toggleLink').textContent = up ? "Sign in" : "Create an account";
-}
+const ADMIN_PASSCODE = "station2";   // <-- change this to your own passcode
 
-async function handleAuth() {
-  const email = $('email').value.trim();
-  const password = $('password').value;
-  try {
-    if (authMode === "up") {
-      const name = $('name').value.trim();
-      if (!email || !password || !name) return note('authNote','Fill in every field to continue.','err');
-      state.user = await store.signUp(email, password, name);
-      if (USING_SUPABASE && !state.user.id) {
-        return note('authNote','Check your email to confirm your account, then sign in.','info');
-      }
-    } else {
-      if (!email || !password) return note('authNote','Enter your email and password.','err');
-      state.user = await store.signIn(email, password);
-    }
-    enterApp();
-  } catch (err) {
-    note('authNote', err.message, 'err');
+function openAdmin() {
+  $('adminDialog').classList.remove('hidden');
+  $('passcode').value = '';
+  setTimeout(()=>$('passcode').focus(), 50);
+}
+function closeAdmin() {
+  $('adminDialog').classList.add('hidden');
+}
+function tryAdmin() {
+  const entered = $('passcode').value;
+  if (entered === ADMIN_PASSCODE) {
+    state.isAdmin = true;
+    closeAdmin();
+    $('tab-manage').classList.remove('hidden');
+    $('adminBtn').classList.add('hidden');
+    $('lockBtn').classList.remove('hidden');
+    go('manage');
+  } else {
+    note('authNote', 'Incorrect passcode.', 'err');
   }
 }
-
-async function logout() {
-  await store.signOut();
-  state.user = null;
-  $('app').classList.add('hidden');
-  $('authScreen').classList.remove('hidden');
-  $('email').value = ''; $('password').value = '';
+function lockAdmin() {
+  state.isAdmin = false;
+  $('tab-manage').classList.add('hidden');
+  $('lockBtn').classList.add('hidden');
+  $('adminBtn').classList.remove('hidden');
+  go('study');
 }
 
 /* =====================================================================
-   ENTER APP
+   ENTER APP  —  runs immediately on load, no login.
    ===================================================================== */
 async function enterApp() {
-  $('authScreen').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('whoName').textContent = state.user.name;
-
-  const admin = isAdmin(state.user);
-  $('whoRole').textContent = admin ? "Admin · Instructor" : "Student";
-  $('whoRole').classList.toggle('admin', admin);
-  $('tab-manage').classList.toggle('hidden', !admin);
-
-  const flag = $('backendFlag');
-  flag.textContent = USING_SUPABASE ? "shared" : "local";
-  flag.classList.toggle('live', USING_SUPABASE);
-
-  // populate topic dropdowns
+  // populate the admin topic dropdowns
   const opts = TOPICS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
   $('mTopic').innerHTML = opts;
   $('filterTopic').innerHTML = `<option value="all">All topics</option>` + opts;
@@ -929,25 +889,10 @@ async function renderHome() {
   `).join('');
   updateTopicTally();
 
-  // stats
-  const st = await store.myStats();
-  $('s-answered').textContent = st.answered;
-  $('s-avg').textContent = st.avg + '%';
-  $('s-sessions').textContent = st.sessions;
+  // simple bank stats (no per-user data in open mode)
   const totalBank = Object.values(counts).reduce((a,b)=>a+b,0);
   $('s-bank').textContent = totalBank;
-
-  // recent
-  const recent = await store.mySessions();
-  $('recent').innerHTML = recent.length
-    ? recent.map(s=>`<div class="row"><span>${new Date(s.date).toLocaleDateString()} · ${topicName(s.topic)}</span><span class="score">${s.score}%</span></div>`).join('')
-    : `<div class="muted-note">No sessions yet — begin one above.</div>`;
-
-  // leaderboard
-  const board = await store.leaderboard();
-  $('board').innerHTML = board.length
-    ? board.map((u,i)=>`<div class="row"><span>${i+1}. ${u.name}</span><span class="score">${u.avg}%</span></div>`).join('')
-    : `<div class="muted-note">No scores yet.</div>`;
+  $('s-topics').textContent = TOPICS.length;
 }
 
 function toggleTopic(id) {
@@ -1095,7 +1040,7 @@ async function finishQuiz() {
   const score = Math.round(Q.correct / total * 100);
   const seconds = Math.floor((Date.now() - Q.start) / 1000);
 
-  await store.saveSession({ topic: Q.topic, score, total, correct: Q.correct, seconds });
+  // Open mode: no accounts, so results are shown but not saved anywhere.
 
   $('view-quiz').classList.add('hidden');
   $('view-results').classList.remove('hidden');
@@ -1112,7 +1057,7 @@ async function finishQuiz() {
    MANAGE (admin)
    ===================================================================== */
 async function addQuestion() {
-  if (!isAdmin(state.user)) return;
+  if (!state.isAdmin) return;
   const rec = {
     topic: $('mTopic').value,
     q: $('mQ').value.trim(),
@@ -1158,12 +1103,10 @@ async function removeQuestion(id) {
 }
 
 /* =====================================================================
-   BOOT
+   BOOT  —  open access, straight into study.
    ===================================================================== */
 (async function boot() {
-  const u = await store.currentUser();
-  if (u) { state.user = u; enterApp(); return; }
-  // otherwise the auth screen is already showing
+  await enterApp();
 })();
 </script>
 </body>
