@@ -25,14 +25,34 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Base colour is a literal hex on its OWN declaration so it survives even if a
+   browser fails to parse the gradient shorthand or a custom property. */
+html {
+  background-color: #0c0d0b;
+  color-scheme: dark;              /* keeps native controls + scrollbars dark */
+}
+
 body {
   font-family: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(231,97,26,0.07), transparent 60%),
-    var(--ink);
+  background-color: #0c0d0b;
+  background-image: radial-gradient(1200px 600px at 80% -10%, rgba(231,97,26,0.07), transparent 60%);
+  background-repeat: no-repeat;
   min-height: 100vh;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Final safety net: a fixed, full-viewport dark layer behind everything.
+   Guarantees no white shows through in any renderer or on overscroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: #0c0d0b;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .wrap { max-width: 1120px; margin: 0 auto; padding: 20px; }
@@ -102,7 +122,7 @@ h1, h2, h3 { letter-spacing: -0.01em; }
 button { border: none; border-radius: var(--radius); font-weight: 600; font-size: 14px; cursor: pointer; transition: transform .04s, background .15s, border-color .15s; font-family: inherit; color: var(--text); }
 button:active { transform: translateY(1px); }
 .btn-go { width: 100%; padding: 12px; background: var(--signal); color: #fff; }
-.btn-go:hover { background: #ff6f50; }
+.btn-go:hover { background: #f5701f; }
 .btn-quiet { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
 .btn-quiet:hover { border-color: var(--muted); }
 .btn-bad { background: var(--bad-dim); color: var(--bad); border: 1px solid transparent; }
@@ -114,7 +134,7 @@ button:active { transform: translateY(1px); }
 /* ---------- HEADER ---------- */
 .topbar {
   border-bottom: 1px solid var(--line-soft);
-  background: rgba(11,18,32,0.6);
+  background: #131510;
   backdrop-filter: blur(8px);
   position: sticky; top: 0; z-index: 50;
 }
@@ -212,7 +232,7 @@ button:active { transform: translateY(1px); }
   padding: 2px 9px; margin-bottom: 12px;
 }
 
-.explain { margin-top: 16px; padding: 14px; background: var(--panel-2); border-left: 3px solid var(--line); border-radius: 8px; font-size: 13.5px; line-height: 1.5; color: #c4cfe0; }
+.explain { margin-top: 16px; padding: 14px; background: var(--panel-2); border-left: 3px solid var(--line); border-radius: 8px; font-size: 13.5px; line-height: 1.5; color: #d9d5c9; }
 .explain.right { border-left-color: var(--go); }
 .explain.wrong { border-left-color: var(--bad); }
 .verdict { font-weight: 700; margin-bottom: 6px; }
@@ -243,7 +263,7 @@ button:active { transform: translateY(1px); }
 .qitem .qq { font-weight: 600; font-size: 14px; line-height: 1.4; }
 .pill { font-size: 10.5px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; height: fit-content; }
 .pill.easy { background: var(--go-dim); color: var(--go); }
-.pill.medium { background: rgba(244,193,82,0.16); color: var(--warn); }
+.pill.medium { background: rgba(224,168,46,0.16); color: var(--warn); }
 .pill.hard { background: var(--bad-dim); color: var(--bad); }
 .qitem .opts-line { font-size: 12.5px; color: var(--muted); margin-bottom: 9px; line-height: 1.6; }
 .qitem .opts-line .ok { color: var(--go); font-weight: 600; }
@@ -251,9 +271,9 @@ button:active { transform: translateY(1px); }
 /* ---------- MISC ---------- */
 .hidden { display: none !important; }
 .note { padding: 12px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 14px; line-height: 1.45; }
-.note.ok { background: var(--go-dim); color: #8df0c4; }
-.note.err { background: var(--bad-dim); color: #ffb3c2; }
-.note.info { background: rgba(231,97,26,0.09); color: #ffc3b2; border: 1px solid rgba(231,97,26,0.22); }
+.note.ok { background: var(--go-dim); color: #cfe0a6; }
+.note.err { background: var(--bad-dim); color: #f3b6b0; }
+.note.info { background: rgba(231,97,26,0.09); color: #f6c4a6; border: 1px solid rgba(231,97,26,0.22); }
 .split { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: start; }
 @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
 .backend-flag { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line); color: var(--muted); }
@@ -492,6 +512,36 @@ const BUILTIN = {
     {"t":"fib","q":"An excavation or trench is defined as an emergency at a depth of at least ____ feet.","ans":["4","four"],"d":"easy","e":"SOP 7-1: four feet or deeper, or any excavation deeper than it is wide."},
     {"t":"fib","q":"For a building collapse, the safety zone is set at ____ times the height of the structure.","ans":["2.5","2 1/2","two and a half","2½"],"d":"medium","e":"SOP 7-1: 2½ times the height of the structure."},
     {"t":"fib","q":"Trench apparatus should remain at least ____ feet from the location of the trench failure.","ans":["50","fifty"],"d":"medium","e":"SOP 7-1: at least 50 feet from the trench failure."},
+    {"q":"What is the primary purpose of SOG 1?","o":["Standardize vehicle stabilization","Provide guidelines for activation of the Technical Rescue Team","Establish collapse shoring standards","Establish confined-space atmospheric limits"],"a":1,"d":"easy","e":"SOG 1, PDF p.1, Policy."},
+    {"t":"fib","q":"A rope rescue incident involves rope systems and equipment used to safely access and _____ patients.","ans":["remove"],"d":"easy","e":"SOG 1, PDF p.1, I. Definitions, #1."},
+    {"q":"Which location could qualify as a rope rescue incident?","o":["High-rise structure","Elevated position","Below-grade location","All of the above"],"a":3,"d":"easy","e":"SOG 1, PDF p.1, I. Definitions, #1."},
+    {"t":"tf","q":"A confined space must have been specifically designed for continuous human occupancy.","a":1,"d":"easy","e":"False. SOG 1, PDF p.1, I. Definitions, #2."},
+    {"t":"fib","q":"An excavation/trench emergency includes a depression, trench, hole, or earth wall _____ feet or deeper.","ans":["4 feet"],"d":"easy","e":"SOG 1, PDF p.1, I. Definitions, #3."},
+    {"t":"tf","q":"An excavation that is deeper than it is wide may qualify as an excavation/trench emergency.","a":0,"d":"easy","e":"True. SOG 1, PDF p.1, I. Definitions, #3."},
+    {"q":"Structural collapse includes the failure or potential failure of:","o":["Buildings only","Buildings and bridges only","Any structure or structural component","Only occupied structures"],"a":2,"d":"easy","e":"SOG 1, PDF p.1, I. Definitions, #4."},
+    {"t":"fib","q":"Vehicle and machinery rescue includes a victim who is physically _____ because of compromised structural integrity.","ans":["pinned"],"d":"easy","e":"SOG 1, PDF p.2, I. Definitions, #5."},
+    {"q":"A TRT assignment shall be activated when which rescue condition is present or anticipated?","o":["Rope rescue","Confined space","Structural collapse","Any listed TRT condition"],"a":3,"d":"easy","e":"SOG 1, PDF p.2, II. Resources."},
+    {"t":"tf","q":"Vehicle and machinery rescue is one of the conditions specifically requiring a TRT assignment.","a":0,"d":"easy","e":"True. SOG 1, PDF p.2, II. Resources."},
+    {"t":"fib","q":"A TRT Assignment includes Battalion _____.","ans":["1"],"d":"easy","e":"SOG 1, PDF p.2, II. Resources."},
+    {"t":"fib","q":"A TRT Assignment includes Engine 2 and Rescue _____.","ans":["2"],"d":"easy","e":"SOG 1, PDF p.2, II. Resources."},
+    {"q":"Which apparatus combination is identified in the TRT Assignment?","o":["Squad 1/Ladder 1","Squad 2/Ladder 2","Squad 1/Ladder 2","Squad 2/Ladder 1"],"a":1,"d":"medium","e":"SOG 1, PDF p.2, II. Resources."},
+    {"t":"fib","q":"A Single Unit Response consists of all _____ personnel responding on Squad 2.","ans":["4"],"d":"medium","e":"SOG 1, PDF p.2, II. Resources, Single Unit Response."},
+    {"t":"fib","q":"During a Multi-Unit Response, 2 personnel respond on Squad 2 and _____ personnel respond on Ladder 2.","ans":["2"],"d":"medium","e":"SOG 1, PDF p.2, II. Resources, Multi-Unit Response."},
+    {"t":"tf","q":"Additional resources may be requested as deemed necessary by the Incident Commander.","a":0,"d":"medium","e":"True. SOG 1, PDF p.2, II. Resources."},
+    {"q":"Who initiates the command process?","o":["First arriving Battalion Chief only","TRT Group Leader","First arriving CGFD unit","Safety Officer"],"a":2,"d":"medium","e":"SOG 1, PDF p.2, III. Procedure, #1."},
+    {"t":"fib","q":"The command process begins with an initial _____ report.","ans":["radio"],"d":"medium","e":"SOG 1, PDF p.2, III. Procedure, #1."},
+    {"q":"The initial radio report shall include:","o":["Unit designation","Assumption and identification of Command","Request for Technical Rescue Assignment","All of the above"],"a":3,"d":"medium","e":"SOG 1, PDF p.2, III. Procedure, Radio Report."},
+    {"t":"tf","q":"The initial radio report includes a request for Staff Notification.","a":0,"d":"medium","e":"True. SOG 1, PDF p.2, III. Procedure, Radio Report."},
+    {"t":"fib","q":"The initial report should include a brief description of the incident _____.","ans":["situation"],"d":"medium","e":"SOG 1, PDF p.3, III. Procedure, #2."},
+    {"q":"Which is listed as an example of an incident situation?","o":["High-angle rescue","Confined space","Trench rescue","All of the above"],"a":3,"d":"medium","e":"SOG 1, PDF p.3, III. Procedure, #2."},
+    {"t":"tf","q":"Any entrapment or impalement with a fixed object is identified as an example incident situation.","a":0,"d":"hard","e":"True. SOG 1, PDF p.3, III. Procedure, #2."},
+    {"t":"fib","q":"After the initial radio report, the first arriving unit shall initiate Phase _____ of the Technical Rescue.","ans":["1"],"d":"hard","e":"SOG 1, PDF p.3, III. Procedure, #8."},
+    {"q":"The first action in Phase I is:","o":["Begin shoring","Perform a 360-degree safety survey and size-up","Establish Rehab","Begin victim removal"],"a":1,"d":"hard","e":"SOG 1, PDF p.3, Phase I, #1."},
+    {"t":"fib","q":"For a building collapse, the SOG 1 safety zone is _____ times the height of the structure.","ans":["2½"],"d":"hard","e":"SOG 1, PDF p.3, Phase I, #2(a)."},
+    {"t":"fib","q":"At a trench incident, apparatus shall remain at least _____ feet from the location of the trench failure.","ans":["50"],"d":"hard","e":"SOG 1, PDF p.3, Phase I, #2(b)."},
+    {"t":"tf","q":"First-due engine companies should stretch hoselines to the scene due to the potential for fire or explosion.","a":0,"d":"hard","e":"True. SOG 1, PDF p.3, Phase I, #3."},
+    {"q":"During Phase I, personnel should make a conscious decision whether the incident is:","o":["Offensive or defensive","Technical or nontechnical","Rescue or recovery","Primary or secondary"],"a":2,"d":"hard","e":"SOG 1, PDF p.3, Phase I, #11."},
+    {"t":"tf","q":"After Phase I preparation and reconnaissance, personnel await TRT and assist in initiating Phase 2.","a":0,"d":"hard","e":"True. SOG 1, PDF p.4, Phase I, #13."},
   ],
   "sop-extrication": [
     {"q":"What is the purpose of SOP 7-2?","o":["To define rope angles","To standardize the department's response to vehicle extrication","To set hazmat limits","To outline trench shoring"],"a":1,"d":"easy","e":"SOP 7-2: It standardizes CGFD's response and handling of any vehicle extrication."},
@@ -524,6 +574,34 @@ const BUILTIN = {
     {"t":"tf","q":"Ultimate responsibility at a vehicle extrication scene lies with the Medical Group Leader.","a":1,"d":"medium","e":"False. Ultimate responsibility lies with the Incident Commander."},
     {"t":"fib","q":"The action circle at a vehicle extrication is approximately ____ feet in circumference.","ans":["25","twenty-five","twenty five"],"d":"easy","e":"SOP 7-2: approximately 25 feet in circumference."},
     {"t":"fib","q":"At minimum, a ____ inch charged hose line must be staffed at all times during extrication.","ans":["1.75","1 3/4","1¾","1 3/4 inch"],"d":"medium","e":"SOP 7-2: a minimum 1¾\" line, charged and staffed at all times."},
+    {"q":"The objective of SOG 2 is to standardize CGFD\\'s response and handling of:","o":["Collapse rescue","Vehicle extrication","Rope rescue","Trench rescue"],"a":1,"d":"easy","e":"SOG 2, PDF p.5, Objective."},
+    {"t":"tf","q":"Vehicle extrication may involve movement of material from around the victim.","a":0,"d":"easy","e":"True. SOG 2, PDF p.5, I. Definitions."},
+    {"t":"fib","q":"Vehicle extrication may involve clearing the rescuer\\'s access path or the victim\\'s _____ path.","ans":["removal"],"d":"easy","e":"SOG 2, PDF p.5, I. Definitions."},
+    {"q":"Vehicle placement shall comply with which SOG?","o":["Technical Rescue Activation","Highway Scene Safety Procedures","Structural Collapse","Confined Space"],"a":1,"d":"easy","e":"SOG 2, PDF p.5, II. Procedure, A. First Arriving Unit, #1."},
+    {"t":"fib","q":"The first arriving unit shall establish _____.","ans":["Command"],"d":"easy","e":"SOG 2, PDF p.5, II. Procedure, A, #2."},
+    {"q":"The recommended initial scene/patient survey method is:","o":["Left/right survey","Rapid intervention survey","Outer/inner survey","Top/bottom survey"],"a":2,"d":"easy","e":"SOG 2, PDF p.5, II. Procedure, A, #3."},
+    {"t":"tf","q":"An Extrication Assignment should be requested after confirmed entrapment has been established.","a":0,"d":"easy","e":"True. SOG 2, PDF p.5, II. Procedure, A, #4."},
+    {"t":"fib","q":"The IC must ensure proper rescue tools are on scene or _____.","ans":["en route"],"d":"easy","e":"SOG 2, PDF p.5, II. Procedure, A, #4."},
+    {"q":"The IC should consider all of the following when determining additional resources EXCEPT:","o":["Staffing","Special tools","Transportation needs","Station meal schedule"],"a":3,"d":"easy","e":"SOG 2, PDF p.6, resource determination paragraph."},
+    {"t":"tf","q":"Special hazards such as electric vehicles should be considered during resource determination.","a":0,"d":"easy","e":"True. SOG 2, PDF p.6, resource determination paragraph."},
+    {"t":"fib","q":"The tool staging area includes an action circle approximately _____ feet in circumference.","ans":["25"],"d":"easy","e":"SOG 2, PDF p.6, A, #5."},
+    {"q":"What is the minimum hoseline required at an extrication?","o":["1 inch","1½ inch","1¾ inch","2½ inch"],"a":2,"d":"easy","e":"SOG 2, PDF p.6, A, #6."},
+    {"t":"tf","q":"The minimum hoseline must be charged and staffed at all times.","a":0,"d":"medium","e":"True. SOG 2, PDF p.6, A, #6."},
+    {"t":"fib","q":"After controlling hazards, personnel shall _____ the vehicle(s).","ans":["stabilize"],"d":"medium","e":"SOG 2, PDF p.6, A, #7."},
+    {"t":"fib","q":"After vehicle stabilization, personnel shall gain _____ to the patient(s).","ans":["access"],"d":"medium","e":"SOG 2, PDF p.6, A, #8."},
+    {"q":"The primary patient survey should be accompanied by:","o":["Airway establishment","Spinal immobilization","Patient care","All of the above"],"a":3,"d":"medium","e":"SOG 2, PDF p.6, A, #9."},
+    {"t":"tf","q":"Material should be removed in a controlled manner to avoid further aggravating patient injuries.","a":0,"d":"medium","e":"True. SOG 2, PDF p.6, A, #10."},
+    {"t":"fib","q":"Patients should be prepared for _____ without delay.","ans":["transport"],"d":"medium","e":"SOG 2, PDF p.6, A, #13."},
+    {"t":"tf","q":"Extrication, triage, treatment, hazard control, and transportation may be assigned as Divisions/Groups.","a":0,"d":"medium","e":"True. SOG 2, PDF p.6, B. Command Procedures, #1."},
+    {"q":"Access to the action circle should be:","o":["Open to all responders","Strictly controlled","Limited to Command staff","Limited to law enforcement"],"a":1,"d":"medium","e":"SOG 2, PDF p.6, B. Command Procedures, #2."},
+    {"t":"fib","q":"Patient care is under the control of the Medical Group _____.","ans":["Leader"],"d":"medium","e":"SOG 2, PDF p.7, B. Command Procedures, #3."},
+    {"t":"fib","q":"Ultimate responsibility for the extrication scene lies with the Incident _____.","ans":["Commander"],"d":"hard","e":"SOG 2, PDF p.7, B. Command Procedures, #3."},
+    {"q":"An Extrication Assignment includes how many Battalion Chiefs?","o":["1","2","3","None"],"a":0,"d":"hard","e":"SOG 2, PDF p.7, C. Resources, #1."},
+    {"t":"fib","q":"An Extrication Assignment includes _____ suppression units.","ans":["2"],"d":"hard","e":"SOG 2, PDF p.7, C. Resources, #1."},
+    {"t":"fib","q":"An Extrication Assignment includes _____ Rescue Units.","ans":["2"],"d":"hard","e":"SOG 2, PDF p.7, C. Resources, #1."},
+    {"t":"tf","q":"Squad personnel are combined with Ladder personnel as a single-unit company on Squad 2.","a":0,"d":"hard","e":"True. SOG 2, PDF p.7, C. Resources, #1(d)."},
+    {"t":"fib","q":"All personnel inside the action circle shall be in full protective _____.","ans":["gear"],"d":"hard","e":"SOG 2, PDF p.7, III. Special Considerations, #3."},
+    {"t":"tf","q":"Personnel outside the action circle who are not actively performing extrication are directed to wear an issued reflective traffic vest.","a":0,"d":"hard","e":"True. SOG 2, PDF p.7, III. Special Considerations, #3."},
   ],
   "sop-rope": [
     {"q":"A non-technical evacuation is generally one with terrain less than what angle?","o":["30 degrees","40 degrees","50 degrees","60 degrees"],"a":1,"d":"easy","e":"SOP 7-3: Non-technical evacuations are generally less than 40 degrees inclination."},
@@ -557,6 +635,41 @@ const BUILTIN = {
     {"t":"fib","q":"A non-technical evacuation generally involves terrain less than ____ degrees.","ans":["40","forty"],"d":"easy","e":"SOP 7-3: non-technical evacuations are generally less than 40 degrees."},
     {"t":"fib","q":"Evacuations greater than ____ degrees are high-angle operations conducted by the TRT.","ans":["60","sixty"],"d":"medium","e":"SOP 7-3: evacuations greater than 60 degrees are high-angle operations."},
     {"t":"fib","q":"The Rope Rescue SOG references NFPA standard ____.","ans":["1670"],"d":"hard","e":"SOP 7-3: the Rope Rescue SOG references NFPA 1670."},
+    {"t":"fib","q":"A rope rescue requires rope and related equipment to safely gain _____ to and remove patients.","ans":["access"],"d":"easy","e":"SOG 3, PDF p.8, I. Definitions, #1."},
+    {"q":"A non-technical evacuation is generally:","o":["Less than 40°","Greater than 40°","Greater than 60°","Exactly 45°"],"a":0,"d":"easy","e":"SOG 3, PDF p.8, I. Definitions, #2."},
+    {"t":"fib","q":"A technical evacuation is generally greater than _____ degrees.","ans":["40"],"d":"easy","e":"SOG 3, PDF p.8, I. Definitions, #3."},
+    {"t":"tf","q":"Rough terrain may make an evacuation technical even based on training requirements.","a":0,"d":"easy","e":"True. SOG 3, PDF p.8, I. Definitions, #3."},
+    {"t":"fib","q":"The first arriving Company Officer shall establish _____.","ans":["Command"],"d":"easy","e":"SOG 3, PDF p.8, Phase One, A. Assessment, #1."},
+    {"t":"tf","q":"Command should secure a responsible party or witness as soon as possible.","a":0,"d":"easy","e":"True. SOG 3, PDF p.9, Phase One, A, #2."},
+    {"q":"The Recon Team determines:","o":["Exact patient location","Number of patients","Nature of injuries","All of the above"],"a":3,"d":"easy","e":"SOG 3, PDF p.9, Phase One, A, #3."},
+    {"t":"fib","q":"Command shall designate a minimum of _____ personnel as the Recon Team.","ans":["2"],"d":"easy","e":"SOG 3, PDF p.9, Phase One, A, #3."},
+    {"t":"tf","q":"The Recon Team should carry medical equipment.","a":0,"d":"easy","e":"True. SOG 3, PDF p.9, Phase One, A, #3."},
+    {"t":"fib","q":"When practical, one _____ member should be assigned to the Recon Team.","ans":["TRT"],"d":"easy","e":"SOG 3, PDF p.9, Phase One, A, #3."},
+    {"t":"tf","q":"For terrain greater than 40°, Command may wait for TRT based upon risk versus benefit.","a":0,"d":"easy","e":"True. SOG 3, PDF p.9, Phase One, A, #3."},
+    {"q":"Command may use what resource for aerial reconnaissance?","o":["Drone only","Helicopter","Crane","Tower ladder only"],"a":1,"d":"easy","e":"SOG 3, PDF p.9, Phase One, A, #3."},
+    {"t":"fib","q":"The Safety Officer shall identify potential _____ to rescuers.","ans":["hazards"],"d":"easy","e":"SOG 3, PDF p.9, B. Manpower and Equipment, #2."},
+    {"q":"Who advises Command regarding Rescue versus Recovery?","o":["Medical Group","Recon Team","Logistics","Sheriff"],"a":1,"d":"easy","e":"SOG 3, PDF p.9, B. Manpower and Equipment, #3."},
+    {"t":"tf","q":"Recovery operations should be coordinated with the Sheriff\\'s Department.","a":0,"d":"medium","e":"True. SOG 3, PDF p.9, B. Manpower and Equipment, #3."},
+    {"t":"fib","q":"The TRT Group Leader should have an _____ Action Plan if the first choice fails.","ans":["alternative"],"d":"medium","e":"SOG 3, PDF p.10, Phase Two, #3."},
+    {"q":"Rescue operations should generally progress:","o":["High risk to low risk","Low risk to high risk","Most difficult first","Longest duration first"],"a":1,"d":"medium","e":"SOG 3, PDF p.10, Phase Three, #1."},
+    {"t":"tf","q":"Self-rescue should be considered before higher-risk rope operations when appropriate.","a":0,"d":"medium","e":"True. SOG 3, PDF p.10, Phase Three, #2(a)."},
+    {"t":"fib","q":"Terrain less than _____ degrees is treated as non-technical in the SOG.","ans":["40"],"d":"medium","e":"SOG 3, PDF p.10, Phase Three, #2(b)."},
+    {"q":"An injured nonambulatory patient on nontechnical terrain should generally be packaged in:","o":["Longboard only","Stokes basket","Scoop stretcher only","Reeves sleeve only"],"a":1,"d":"medium","e":"SOG 3, PDF pp.10-11, Phase Three, #2(b)."},
+    {"t":"fib","q":"A stokes evacuation requires a minimum of _____ attendants.","ans":["4"],"d":"medium","e":"SOG 3, PDF p.11, Phase Three, #3."},
+    {"t":"tf","q":"During a standard stokes evacuation, attendants should face the direction of travel.","a":0,"d":"medium","e":"True. SOG 3, PDF p.11, Phase Three, #3."},
+    {"q":"On terrain greater than 40°, an ambulatory patient may be assisted with:","o":["Belay/tag line","No rope","Tow chain","Aerial ladder only"],"a":0,"d":"medium","e":"SOG 3, PDF p.11, Phase Three, #4."},
+    {"t":"fib","q":"During steep-angle evacuation there shall be a separate raising/lowering line and _____ line.","ans":["belay"],"d":"medium","e":"SOG 3, PDF p.11, Phase Three, #5."},
+    {"q":"Evacuations greater than 60° are:","o":["Nontechnical","Low-angle","High-angle operations","Ground evacuations"],"a":2,"d":"medium","e":"SOG 3, PDF p.11, Phase Three, #6."},
+    {"t":"tf","q":"The TRT shall conduct evacuations greater than 60°.","a":0,"d":"medium","e":"True. SOG 3, PDF p.11, Phase Three, #6."},
+    {"t":"fib","q":"In any case, _____ rope technique shall be used.","ans":["double"],"d":"hard","e":"SOG 3, PDF p.11, Phase Three, #7."},
+    {"t":"tf","q":"When possible, separate anchors should be used for the main and belay lines.","a":0,"d":"hard","e":"True. SOG 3, PDF p.11, Phase Three, #7."},
+    {"q":"Crane operations are considered:","o":["Routine","Low-risk","High-risk","Nontechnical"],"a":2,"d":"hard","e":"SOG 3, PDF p.11, Phase Three, #8."},
+    {"t":"tf","q":"Crane operator qualifications are one factor that must be considered.","a":0,"d":"hard","e":"True. SOG 3, PDF p.11, Phase Three, #8."},
+    {"t":"fib","q":"Safety considerations include helmets, gloves, harnesses, and _____ protection.","ans":["eye"],"d":"hard","e":"SOG 3, PDF p.12, Phase Four, #1."},
+    {"q":"Phase Four requires personnel to perform:","o":["Lock-out/tag-out","Payroll reconciliation","Traffic citation review","Dispatch recording"],"a":0,"d":"hard","e":"SOG 3, PDF p.12, Phase Four, #3."},
+    {"t":"fib","q":"Following evacuation, a patient shall be turned over to a _____ Group.","ans":["Medical"],"d":"hard","e":"SOG 3, PDF p.12, Phase 5, #1."},
+    {"t":"fib","q":"After evacuation, Command shall call for a _____ to ensure personnel and equipment accountability.","ans":["PAR"],"d":"hard","e":"SOG 3, PDF p.12, Phase 5, #2."},
+    {"t":"tf","q":"Damaged rope-rescue equipment shall be tagged and placed out of service until repaired.","a":0,"d":"hard","e":"True. SOG 3, PDF p.12, Phase 5, #4."},
   ],
   "sop-confined": [
     {"q":"Confined spaces are NOT intended for what?","o":["Storage","Continual employee occupancy","Ventilation","Atmospheric monitoring"],"a":1,"d":"easy","e":"SOP 7-4: Confined spaces are areas not intended for continual employee occupancy with limited egress."},
@@ -590,6 +703,41 @@ const BUILTIN = {
     {"t":"fib","q":"An atmosphere is oxygen deficient (IDLH) below ____ percent oxygen.","ans":["19.5","19.5 percent"],"d":"easy","e":"SOP 7-4: oxygen deficient is below 19.5%."},
     {"t":"fib","q":"Entry teams are limited to ____ minutes in any confined space.","ans":["20","twenty"],"d":"medium","e":"SOP 7-4: teams are limited to twenty minutes."},
     {"t":"fib","q":"Flammability is considered IDLH at ____ percent of the Lower Explosive Limit.","ans":["10","ten"],"d":"hard","e":"SOP 7-4: flammability at 10% of the LEL is IDLH."},
+    {"t":"fib","q":"Confined spaces are not intended for continual employee _____.","ans":["occupancy"],"d":"easy","e":"SOG 4, PDF p.13, I. Definitions, #1."},
+    {"q":"A confined space has:","o":["Unlimited egress","Limited means of egress","Required windows","Permanent ventilation"],"a":1,"d":"easy","e":"SOG 4, PDF p.13, I. Definitions, #1."},
+    {"t":"tf","q":"A confined space may present physical, chemical, or atmospheric engulfment.","a":0,"d":"easy","e":"True. SOG 4, PDF p.13, I. Definitions, #1."},
+    {"q":"An attendant is stationed:","o":["Inside the confined space","Outside one or more confined spaces","At Command only","At the hospital"],"a":1,"d":"easy","e":"SOG 4, PDF p.13, I. Definitions, #2."},
+    {"t":"tf","q":"An attendant remains outside until relieved by another attendant.","a":0,"d":"easy","e":"True. SOG 4, PDF p.13, I. Definitions, #2(a)."},
+    {"t":"fib","q":"A competent person has authority to take prompt _____ measures.","ans":["corrective"],"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #3."},
+    {"q":"Engulfment may cause death from:","o":["Strangulation","Constriction","Crushing","All of the above"],"a":3,"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #4."},
+    {"t":"fib","q":"An Entry Permit is established for _____-rescue entry into confined spaces.","ans":["non"],"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #5."},
+    {"t":"fib","q":"Flammable gas, vapor, or mist in excess of _____% of its LFL constitutes a hazardous atmosphere under the definition.","ans":["10"],"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #6(a)."},
+    {"t":"fib","q":"An oxygen concentration below _____% is hazardous.","ans":["19.5"],"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #6(c)."},
+    {"t":"fib","q":"An oxygen concentration above _____% is hazardous.","ans":["23.5"],"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #6(c)."},
+    {"q":"IDLH stands for:","o":["Incident Danger Level Hazard","Immediately Dangerous to Life or Health","Internal Danger Location Hazard","Immediate Department Life Hazard"],"a":1,"d":"easy","e":"SOG 4, PDF p.14, I. Definitions, #6(e)."},
+    {"t":"tf","q":"Rescue Mode means there is a chance a victim may be rescued alive.","a":0,"d":"easy","e":"True. SOG 4, PDF p.14, I. Definitions, #8."},
+    {"q":"During Phase I assessment, personnel should determine:","o":["Type of space","Product storage hazards","Location and number of patients","All of the above"],"a":3,"d":"easy","e":"SOG 4, PDF p.15, Phase I, A. Assessment."},
+    {"t":"tf","q":"Blueprints, maps, or an on-site sketch may be obtained.","a":0,"d":"medium","e":"True. SOG 4, PDF p.15, Phase I, A, #5."},
+    {"t":"fib","q":"Personnel shall decide whether the incident is a rescue or _____.","ans":["recovery"],"d":"medium","e":"SOG 4, PDF p.15, Phase I, A, #7."},
+    {"t":"fib","q":"The IC should assign an access-control person preferably not a _____ team member.","ans":["technical"],"d":"medium","e":"SOG 4, PDF p.15, Phase I, C. Safety-General Area."},
+    {"t":"tf","q":"Atmospheric conditions should be monitored before ventilation and entry.","a":0,"d":"medium","e":"True. SOG 4, PDF p.15, Phase I, C, #1."},
+    {"q":"Positive-pressure ventilation effectiveness should be assessed using:","o":["Atmospheric monitor readings","Space configuration","Both A and B","Neither"],"a":2,"d":"medium","e":"SOG 4, PDF p.16, Phase I, C, #3."},
+    {"t":"tf","q":"Sources of ignition should not be allowed on site.","a":0,"d":"medium","e":"True. SOG 4, PDF p.16, Phase I, C, #6."},
+    {"t":"fib","q":"All fixed mechanical equipment capable of causing injury shall be placed in a _____ mechanical state.","ans":["zero"],"d":"medium","e":"SOG 4, PDF p.16, Phase II, #1(a)."},
+    {"t":"tf","q":"Electrical equipment excluding lighting should be locked in the open/off position.","a":0,"d":"medium","e":"True. SOG 4, PDF p.16, Phase II, #1(b)."},
+    {"t":"fib","q":"The lock key remains with the person who places his/her _____.","ans":["lock"],"d":"medium","e":"SOG 4, PDF p.16, Phase II, #1(c)."},
+    {"t":"tf","q":"If standard SCBA must be removed to fit through the opening, the SOG states, \\\"Do Not Enter.\\\"","a":0,"d":"medium","e":"True. SOG 4, PDF p.16, Phase II, #2."},
+    {"t":"fib","q":"Personnel using standard SCBA shall go no more than _____ feet from the entrance.","ans":["25"],"d":"medium","e":"SOG 4, PDF p.16, Phase II, #2."},
+    {"q":"A backup team must:","o":["Be equally attired","Be on a separate airline system","Both A and B","Neither"],"a":2,"d":"medium","e":"SOG 4, PDF p.17, Phase II, #3."},
+    {"t":"fib","q":"Confined-space entry shall always be in teams of at least _____.","ans":["2"],"d":"hard","e":"SOG 4, PDF p.17, Phase II, #4."},
+    {"t":"tf","q":"Non-intrinsically safe devices may be taken into the space without approval if the entry team is wearing SABA.","a":1,"d":"hard","e":"False. SOG 4, PDF p.17, Phase II, #5."},
+    {"t":"fib","q":"A vertical shaft greater than _____ feet requires a Class III harness and fall-arrest system.","ans":["8"],"d":"hard","e":"SOG 4, PDF p.17, Phase II, #6(h)."},
+    {"q":"Atmospheres shall be tested for:","o":["Oxygen deficiency/excess","Toxicity","Flammability","All of the above"],"a":3,"d":"hard","e":"SOG 4, PDF p.18, Phase III, #3."},
+    {"t":"fib","q":"Flammability at _____% of LEL is considered IDLH.","ans":["10"],"d":"hard","e":"SOG 4, PDF p.18, Phase III, #4(c)."},
+    {"t":"fib","q":"Atmospheric monitoring shall occur no less often than every _____ minutes during occupancy.","ans":["15"],"d":"hard","e":"SOG 4, PDF p.18, Phase III, #5."},
+    {"t":"fib","q":"Confined-space entry teams are limited to _____ minutes in any space.","ans":["20"],"d":"hard","e":"SOG 4, PDF p.19, Phase IV, #5."},
+    {"t":"tf","q":"Mechanical advantage systems or manual winches are preferred over manual hauling.","a":0,"d":"hard","e":"True. SOG 4, PDF p.20, Phase V, #1(c)."},
+    {"t":"tf","q":"Electric winches should not be used to remove patients.","a":0,"d":"hard","e":"True. SOG 4, PDF p.20, Phase V, #1(d)."},
   ],
   "sop-trench": [
     {"q":"By definition, the width of a trench is no greater than how many feet?","o":["10 feet","15 feet","20 feet","25 feet"],"a":1,"d":"easy","e":"SOP 7-5: A trench's width is no greater than 15 feet; generally the depth is greater than the width."},
@@ -623,6 +771,41 @@ const BUILTIN = {
     {"t":"fib","q":"A trench's width is defined as no greater than ____ feet.","ans":["15","fifteen"],"d":"easy","e":"SOP 7-5: a trench's width is no greater than 15 feet."},
     {"t":"fib","q":"Ladders in the excavation must extend ____ feet above the lip of the trench.","ans":["3","three"],"d":"medium","e":"SOP 7-5: ladders must be 3 feet above the lip."},
     {"t":"fib","q":"A trench safety analysis must be performed at least every ____ minutes.","ans":["30","thirty"],"d":"medium","e":"SOP 7-5: perform a safety analysis every 30 minutes."},
+    {"t":"fib","q":"A Competent Person has authorization to take prompt _____ measures.","ans":["corrective"],"d":"easy","e":"SOG 5, PDF p.23, I. Definitions, #2."},
+    {"q":"IDLH may include a condition that:","o":["Threatens life","Causes irreversible adverse health effects","Interferes with escape","All of the above"],"a":3,"d":"easy","e":"SOG 5, PDF p.24, I. Definitions, #6."},
+    {"t":"tf","q":"The Incident Commander is responsible for all decisions relating to management of the incident.","a":0,"d":"easy","e":"True. SOG 5, PDF p.24, I. Definitions, #8."},
+    {"t":"fib","q":"A trench is generally deeper than it is _____.","ans":["wide"],"d":"easy","e":"SOG 5, PDF p.24, I. Definitions, #12."},
+    {"t":"fib","q":"The width of a trench is no greater than _____ feet.","ans":["15"],"d":"easy","e":"SOG 5, PDF p.24, I. Definitions, #12."},
+    {"t":"tf","q":"CGFD personnel may routinely enter an unprotected trench without protective systems.","a":1,"d":"easy","e":"False. SOG 5, PDF p.24, Note after Definition #12."},
+    {"q":"An immediate life-saving deviation requires:","o":["Documented risk-versus-benefit analysis","Explicit IC authorization","Both A and B","Neither"],"a":2,"d":"easy","e":"SOG 5, PDF p.24, Note after Definition #12."},
+    {"t":"fib","q":"Phase One begins with a _____-degree safety survey and size-up.","ans":["360"],"d":"easy","e":"SOG 5, PDF p.25, Phase One, A. Assessment, #1."},
+    {"t":"tf","q":"Persons already in an unsafe trench should be ordered out immediately.","a":0,"d":"easy","e":"True. SOG 5, PDF p.25, Phase One, A, #4."},
+    {"q":"Assessment includes determining:","o":["Depth and width","Soil type","Secondary-collapse potential","All of the above"],"a":3,"d":"easy","e":"SOG 5, PDF pp.25-26, Phase One, A. Assessment."},
+    {"t":"fib","q":"Potential secondary-collapse indicators include _____ in the soil.","ans":["fissures"],"d":"easy","e":"SOG 5, PDF p.25, Phase One, A, #14(a)."},
+    {"t":"fib","q":"Level 1 staging is recommended no closer than _____ feet from the excavation.","ans":["150"],"d":"easy","e":"SOG 5, PDF p.26, Phase Two, #2."},
+    {"t":"tf","q":"Heavy equipment should be turned off.","a":0,"d":"easy","e":"True. SOG 5, PDF p.26, Phase Two, #3."},
+    {"t":"fib","q":"The collapse zone should extend a minimum distance equal to the _____ of the trench.","ans":["depth"],"d":"easy","e":"SOG 5, PDF p.26, Phase Two, #4."},
+    {"q":"Ground pads are placed around:","o":["Face and sides of excavation","Staging only","Rehab only","Command post only"],"a":0,"d":"medium","e":"SOG 5, PDF p.26, Phase Two, #5."},
+    {"t":"fib","q":"Ladders shall extend _____ feet above the lip.","ans":["3"],"d":"medium","e":"SOG 5, PDF p.27, Phase Two, #6."},
+    {"t":"fib","q":"Ladders shall be within _____ feet of workers.","ans":["25"],"d":"medium","e":"SOG 5, PDF p.27, Phase Two, #6."},
+    {"q":"Protective systems may include:","o":["Trench shield/box","Pneumatic/hydraulic shores","Appropriate benching","All of the above"],"a":3,"d":"medium","e":"SOG 5, PDF p.27, Phase Two, #9."},
+    {"t":"fib","q":"An _____ extinguisher should be placed near the trench/excavation.","ans":["ABC"],"d":"medium","e":"SOG 5, PDF p.27, Phase Two, #10."},
+    {"t":"tf","q":"No sources of ignition should be allowed on site.","a":0,"d":"medium","e":"True. SOG 5, PDF p.27, Phase Two, #10."},
+    {"t":"fib","q":"All electrical equipment, excluding lighting, shall be locked out in the _____ position.","ans":["off"],"d":"medium","e":"SOG 5, PDF p.27, Phase Three, #1(b)."},
+    {"t":"tf","q":"One backup team is required for every entry team.","a":0,"d":"medium","e":"True. SOG 5, PDF p.27, Phase Three, #3."},
+    {"t":"fib","q":"No one shall enter a trench alone; minimum team size is _____.","ans":["2"],"d":"medium","e":"SOG 5, PDF p.28, Phase Three, #4."},
+    {"q":"Minimum PPE specifically listed includes:","o":["Flame-retardant coveralls","Class III harness","Helmet","All of the above"],"a":3,"d":"medium","e":"SOG 5, PDF p.28, Phase Three, #5(c)."},
+    {"t":"tf","q":"A lifeline shall accompany each member and be affixed to a ladder.","a":0,"d":"medium","e":"True. SOG 5, PDF p.28, Phase Three, #5(d)."},
+    {"t":"fib","q":"Atmospheric oxygen below _____% is IDLH.","ans":["19.5"],"d":"medium","e":"SOG 5, PDF p.28, Phase Four, #4(a)."},
+    {"t":"fib","q":"Atmospheric oxygen above _____% is IDLH.","ans":["23.5"],"d":"hard","e":"SOG 5, PDF p.28, Phase Four, #4(b)."},
+    {"t":"fib","q":"Flammability at _____% LEL is IDLH.","ans":["10"],"d":"hard","e":"SOG 5, PDF p.28, Phase Four, #4(c)."},
+    {"t":"fib","q":"Atmospheric monitoring shall occur at least every _____ minutes during occupancy.","ans":["15"],"d":"hard","e":"SOG 5, PDF p.29, Phase Four, #6."},
+    {"t":"fib","q":"Trench entry teams are limited to _____ minutes.","ans":["30"],"d":"hard","e":"SOG 5, PDF p.29, Phase Five, #4."},
+    {"t":"tf","q":"Entry team personnel are assigned to rehab before and after trench entry.","a":0,"d":"hard","e":"True. SOG 5, PDF p.29, Phase Five, #5."},
+    {"q":"When working close to a victim, debris should be removed with:","o":["Excavator","Hand or small trowel","Jackhammer","Chainsaw"],"a":1,"d":"hard","e":"SOG 5, PDF p.30, Phase Five, #9."},
+    {"t":"tf","q":"Debris and soil should be saved for later OSHA inspection.","a":0,"d":"hard","e":"True. SOG 5, PDF p.30, Phase Five, #9(b)."},
+    {"t":"fib","q":"A trench safety analysis shall be performed every _____ minutes.","ans":["30"],"d":"hard","e":"SOG 5, PDF p.31, Phase Seven, #7."},
+    {"t":"tf","q":"Equipment should generally be removed in reverse order.","a":0,"d":"hard","e":"True. SOG 5, PDF p.31, Phase Seven, #11."},
   ],
   "sop-collapse": [
     {"q":"What is the recommended safety zone for a structural collapse?","o":["Equal to the building height","1½ times the height","Two times the height of the building","2½ times the height"],"a":2,"d":"easy","e":"SOP 7-6: Establish a safety zone two times the height of the building."},
@@ -656,6 +839,41 @@ const BUILTIN = {
     {"t":"fib","q":"The structural collapse safety zone is set at ____ times the height of the building.","ans":["2","two"],"d":"easy","e":"SOP 7-6: safety zone is two times the height."},
     {"t":"fib","q":"A crib box can be built up to ____ times as high as it is wide.","ans":["3","three"],"d":"hard","e":"SOP 7-6: rule of thumb — up to three times as high as wide."},
     {"t":"fib","q":"One long blast of the hailing system lasting ____ seconds signals all quiet.","ans":["3","three"],"d":"medium","e":"SOP 7-6: one long blast (3 seconds) = cease operations / all quiet."},
+    {"q":"Natural structural-failure causes include:","o":["Hurricanes","Earthquakes","Floods","All of the above"],"a":3,"d":"easy","e":"SOG 6, PDF p.33, I. Definitions, Structural Failure Causes #1."},
+    {"t":"tf","q":"Fire or explosion is identified as a possible cause of structural failure.","a":0,"d":"easy","e":"True. SOG 6, PDF p.33, I. Definitions, Structural Failure Causes #2."},
+    {"q":"Human factors may include:","o":["Aircraft impact","Vehicle crash","Intentional malicious damage","All of the above"],"a":3,"d":"easy","e":"SOG 6, PDF p.33, I. Definitions, Structural Failure Causes #3."},
+    {"t":"fib","q":"Poor design or poor detailing at major connections are classified as _____ errors.","ans":["engineering"],"d":"easy","e":"SOG 6, PDF p.33, I. Definitions, Structural Failure Causes #4."},
+    {"t":"fib","q":"Initial structural-collapse size-up requires a _____-degree safety survey.","ans":["360"],"d":"easy","e":"SOG 6, PDF p.34, Phase I, A. Assessment, #1."},
+    {"t":"fib","q":"SOG 6 directs personnel to establish a safety zone _____ times the height of the building.","ans":["2"],"d":"easy","e":"SOG 6, PDF p.34, Phase I, A, #2."},
+    {"t":"tf","q":"Assessment should determine the building occupancy and use.","a":0,"d":"easy","e":"True. SOG 6, PDF p.34, Phase I, A, #4."},
+    {"t":"fib","q":"Personnel shall determine the location and number of _____ trapped.","ans":["victims"],"d":"easy","e":"SOG 6, PDF p.34, Phase I, A, #6."},
+    {"t":"tf","q":"Blueprints, maps, or an on-site sketch may be obtained.","a":0,"d":"easy","e":"True. SOG 6, PDF p.34, Phase I, A, #7."},
+    {"q":"Assessment should evaluate:","o":["Electrical hazards","Mechanical hazards","Chemical hazards","All of the above"],"a":3,"d":"easy","e":"SOG 6, PDF p.34, Phase I, A, #10."},
+    {"t":"fib","q":"Personnel should consciously decide whether the incident is rescue or _____.","ans":["recovery"],"d":"easy","e":"SOG 6, PDF p.34, Phase I, A, #13."},
+    {"t":"tf","q":"First-due engine companies should stretch hoselines to the collapse site.","a":0,"d":"easy","e":"True. SOG 6, PDF p.34, Phase I, A, #15."},
+    {"q":"Additional resources may include:","o":["Regional TRT","FEMA teams","Air Rescue","All of the above"],"a":3,"d":"easy","e":"SOG 6, PDF p.35, Phase I, B. Manpower and Equipment."},
+    {"t":"tf","q":"Public Works may be requested for vacuum trucks and front loaders.","a":0,"d":"easy","e":"True. SOG 6, PDF p.35, Phase I, B, #5."},
+    {"t":"fib","q":"Utilities shall be identified, secured, or controlled using _____ out/tag out.","ans":["lock"],"d":"medium","e":"SOG 6, PDF p.35, Phase I, C. Make the General Area Safe, #2."},
+    {"q":"Utilities to consider include:","o":["Electrical","Gas/propane/fuel oil","Water and sanitary systems","All of the above"],"a":3,"d":"medium","e":"SOG 6, PDF pp.35-36, Phase I, C, #2(a)."},
+    {"t":"tf","q":"Confined-space hazards may exist inside a structural collapse.","a":0,"d":"medium","e":"True. SOG 6, PDF p.36, Phase I, C, #2(d)."},
+    {"t":"tf","q":"Sources of ignition should be prohibited on site.","a":0,"d":"medium","e":"True. SOG 6, PDF p.36, Phase I, C, #7."},
+    {"t":"fib","q":"Structure/hazard evaluation uses a 2-foot by _____-foot square.","ans":["2"],"d":"medium","e":"SOG 6, PDF p.37, Phase I, D. Structure/Hazard Evaluation Marking System, #3."},
+    {"t":"fib","q":"Only _____ spray paint is specified for the structure/hazard evaluation marking system.","ans":["orange"],"d":"medium","e":"SOG 6, PDF p.37, Phase I, D, #4."},
+    {"q":"A blank structure/hazard marking box means:","o":["Structure inaccessible","Accessible and safe for search/rescue","Hazardous materials present","Search complete"],"a":1,"d":"medium","e":"SOG 6, PDF p.37, Phase I, D, #5(a)."},
+    {"q":"A crossing slash in the structure/hazard box indicates:","o":["Safe structure","Minor damage","Structure is not safe for search and rescue","Victim located"],"a":2,"d":"medium","e":"SOG 6, PDF p.38, Phase I, D, #5(c)."},
+    {"t":"fib","q":"The symbol _____ indicates a hazardous-material condition.","ans":["HM"],"d":"medium","e":"SOG 6, PDF p.38, Phase I, D, #7."},
+    {"t":"fib","q":"At least one _____ shall be assigned per entry/rescue team.","ans":["paramedic"],"d":"medium","e":"SOG 6, PDF p.38, Phase I, E. Entry Preparation, #2."},
+    {"t":"tf","q":"A backup team is required for every entry team.","a":0,"d":"medium","e":"True. SOG 6, PDF p.38, Phase I, E, #3."},
+    {"t":"fib","q":"Structural-collapse entry teams shall contain at least _____ rescuers.","ans":["2"],"d":"medium","e":"SOG 6, PDF p.38, Phase I, E, #4."},
+    {"t":"fib","q":"The search assessment 'X' is 2 feet by _____ feet.","ans":["2"],"d":"hard","e":"SOG 6, PDF p.39, Phase Two, A. Search Assessment Marking, #1."},
+    {"q":"The left quadrant of the search X identifies:","o":["Time/date","Rescue team","Hazards","Victim count"],"a":1,"d":"hard","e":"SOG 6, PDF p.39, Phase Two, A, #2(a)."},
+    {"q":"The top quadrant contains:","o":["Team identifier","Number of victims","Time and date the team left","Hazards"],"a":2,"d":"hard","e":"SOG 6, PDF p.39, Phase Two, A, #2(b)."},
+    {"q":"The right quadrant records:","o":["Personnel hazards","Time","Victim count","Team identifier"],"a":0,"d":"hard","e":"SOG 6, PDF p.39, Phase Two, A, #2(c)."},
+    {"q":"The bottom quadrant contains:","o":["Hazmat status","Live/dead victim count","Structural type","Search-team identifier"],"a":1,"d":"hard","e":"SOG 6, PDF p.39, Phase Two, A, #2(d)."},
+    {"t":"fib","q":"Three short one-second blasts mean _____ the area.","ans":["evacuate"],"d":"hard","e":"SOG 6, PDF p.41, Phase Two, D. Hailing System, #5(b)."},
+    {"t":"fib","q":"One long three-second blast means cease operations/all _____.","ans":["quiet"],"d":"hard","e":"SOG 6, PDF p.41, Phase Two, D. Hailing System, #5(a)."},
+    {"q":"Which collapse pattern has the highest survival rate near interior partitioning?","o":["Pancake","Cantilever","A-frame","Lean-to"],"a":2,"d":"hard","e":"SOG 6, PDF p.42, Phase Two, E. Void Searches, #2(e)."},
+    {"t":"fib","q":"A structural-collapse safety analysis shall be performed every _____ minutes.","ans":["30"],"d":"hard","e":"SOG 6, PDF p.46, Phase Five, #8. # Important Cross-SOG Study Note **Building-collapse safety-zone wording differs between SOG 1 and SOG 6.** SOG 1 (PDF p.3, Phase I #2\\[a\\]) states 2½ times the height of the structure. SOG 6 (PDF p.34, Phase I, A. Assessment #2) states two times the height of the building. This document preserves each SOG as written rather than reconciling the difference."},
   ],
   "shoring": [
     {"q":"What is the maximum design load for a T-Spot shore when the load is centered?","o":["2,000 lbs","4,000 lbs","8,000 lbs","16,000 lbs"],"a":1,"d":"easy","e":"FOG: T-Spot design load is 4,000 lbs, valid ONLY when the load is centered."},
